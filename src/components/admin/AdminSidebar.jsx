@@ -6,6 +6,7 @@ import {
   FiUsers,
   FiImage,
   FiBarChart2,
+  FiHelpCircle,
   FiChevronLeft,
   FiChevronRight,
   FiLogOut,
@@ -18,6 +19,7 @@ const navItems = [
   { path: "/admin/users", label: "Users", icon: FiUsers },
   { path: "/admin/memories", label: "Memories", icon: FiImage },
   { path: "/admin/analytics", label: "Analytics", icon: FiBarChart2 },
+  { path: "/admin/support", label: "Support", icon: FiHelpCircle },
 ];
 
 const AdminSidebar = ({ collapsed, onToggle, mobileOpen, onMobileClose }) => {

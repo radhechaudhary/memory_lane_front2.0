@@ -6,7 +6,11 @@ import {
 } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { AdminRoute, UserRoute } from "./components/ProtectedRoute";
+import {
+  AdminRoute,
+  AuthenticatedRoute,
+  UserRoute,
+} from "./components/ProtectedRoute";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { MemoryProvider } from "./context/MemoryContext";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -16,6 +20,7 @@ import AdminOverview from "./pages/admin/AdminOverview";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminMemories from "./pages/admin/AdminMemories";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminSupport from "./pages/admin/AdminSupport";
 import Register from "./pages/Auth/Register";
 import Login from "./pages/Auth/Login";
 import Settings from "./pages/Auth/settings";
@@ -93,6 +98,7 @@ const AppRoutes = () => (
         <Route path="users" element={<AdminUsers />} />
         <Route path="memories" element={<AdminMemories />} />
         <Route path="analytics" element={<AdminAnalytics />} />
+        <Route path="support" element={<AdminSupport />} />
       </Route>
 
       {/* Legacy admin route redirect */}
@@ -165,9 +171,9 @@ const AppRoutes = () => (
       <Route
         path="/settings"
         element={
-          <UserRoute>
+          <AuthenticatedRoute>
             <Settings />
-          </UserRoute>
+          </AuthenticatedRoute>
         }
       />
       <Route

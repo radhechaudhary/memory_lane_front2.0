@@ -7,6 +7,7 @@ import {
   FiMapPin,
   FiStar,
   FiUsers,
+  FiHelpCircle,
   FiChevronLeft,
   FiChevronRight,
   FiLogOut,
@@ -37,6 +38,7 @@ const UserSidebar = ({
 
   const secondaryLinks = [
     { path: "/shared", label: "Shared Memories", icon: FiUsers },
+    { path: "/support", label: "Support", icon: FiHelpCircle },
   ];
 
   const isActive = (path) => location.pathname === path;

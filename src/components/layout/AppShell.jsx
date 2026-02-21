@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiMenu,
@@ -15,6 +15,7 @@ import {
   FiChevronRight,
   FiHelpCircle,
 } from "react-icons/fi";
+import { useAuth } from "../../hooks/useAuth";
 
 // Simple AppShell component that wraps the content with navigation
 export default function AppShell({
@@ -23,8 +24,9 @@ export default function AppShell({
   title = "",
   subtitle = "",
   contentClassName = "",
+  hideSidebar = false,
 }) {
-  const location = useLocation();
+  const { user } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -45,7 +47,14 @@ export default function AppShell({
   const bottomNavItems = [
     { id: "settings", label: "Settings", icon: FiSettings, path: "/settings" },
     { id: "support", label: "Support", icon: FiHelpCircle, path: "/support" },
-  ];
+  ].filter(
+    (item) =>
+      !(
+        user?.role === "admin" &&
+        activeNav === "settings" &&
+        item.id === "support"
+      ),
+  );
 
   const isActive = (id) => activeNav === id;
 
@@ -168,7 +177,7 @@ export default function AppShell({
   return (
     <div className="min-h-screen bg-[var(--color-page-bg)]">
       {/* Mobile Overlay */}
-      {mobileMenuOpen && (
+      {!hideSidebar && mobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
           onClick={() => setMobileMenuOpen(false)}
@@ -176,42 +185,43 @@ export default function AppShell({
       )}
 
       {/* Mobile Sidebar */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ x: -280 }}
-            animate={{ x: 0 }}
-            exit={{ x: -280 }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed left-0 top-0 bottom-0 w-[280px] bg-[var(--color-surface-bg)] border-r border-[var(--color-surface-border)] z-50 lg:hidden flex flex-col"
-          >
-            <button
-              onClick={() => setMobileMenuOpen(false)}
-              className="absolute top-4 right-4 p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-gray-700 transition-colors lg:hidden"
+      {!hideSidebar && (
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ x: -280 }}
+              animate={{ x: 0 }}
+              exit={{ x: -280 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed left-0 top-0 bottom-0 w-[280px] bg-[var(--color-surface-bg)] border-r border-[var(--color-surface-border)] z-50 lg:hidden flex flex-col"
             >
-              <FiX className="w-5 h-5 text-[var(--color-text-secondary)]" />
-            </button>
-            {sidebarContent}
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="absolute top-4 right-4 p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-gray-700 transition-colors lg:hidden"
+              >
+                <FiX className="w-5 h-5 text-[var(--color-text-secondary)]" />
+              </button>
+              {sidebarContent}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
 
       {/* Desktop Sidebar */}
-      <motion.aside
-        initial={false}
-        animate={{ width: sidebarCollapsed ? 80 : 280 }}
-        transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="hidden lg:flex fixed left-0 top-0 bottom-0 bg-[var(--color-surface-bg)] border-r border-[var(--color-surface-border)] z-40 flex-col"
-      >
-        {sidebarContent}
-      </motion.aside>
+      {!hideSidebar && (
+        <motion.aside
+          initial={false}
+          animate={{ width: sidebarCollapsed ? 80 : 280 }}
+          transition={{ type: "spring", damping: 25, stiffness: 200 }}
+          className="hidden lg:flex fixed left-0 top-0 bottom-0 bg-[var(--color-surface-bg)] border-r border-[var(--color-surface-border)] z-40 flex-col"
+        >
+          {sidebarContent}
+        </motion.aside>
+      )}
 
       {/* Main Content */}
-      <motion.div
-        initial={false}
-        animate={{ marginLeft: sidebarCollapsed ? 80 : 280 }}
-        transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="min-h-screen"
+      <div
+        className={`min-h-screen ${!hideSidebar ? (sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]") : ""}`}
       >
         {/* Header */}
         <header className="sticky top-0 z-30 border-b border-[var(--color-surface-border)] bg-[var(--color-surface-bg)]/80 backdrop-blur-md">
@@ -219,12 +229,14 @@ export default function AppShell({
             {/* Left Section */}
             <div className="flex items-center gap-4">
               {/* Mobile Menu Button */}
-              <button
-                onClick={() => setMobileMenuOpen(true)}
-                className="lg:hidden p-2 rounded-xl hover:bg-stone-100 dark:hover:bg-gray-700 transition-colors"
-              >
-                <FiMenu className="w-5 h-5 text-[var(--color-text-secondary)]" />
-              </button>
+              {!hideSidebar && (
+                <button
+                  onClick={() => setMobileMenuOpen(true)}
+                  className="lg:hidden p-2 rounded-xl hover:bg-stone-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <FiMenu className="w-5 h-5 text-[var(--color-text-secondary)]" />
+                </button>
+              )}
 
               {/* Title */}
               <div>
@@ -243,7 +255,7 @@ export default function AppShell({
 
         {/* Page Content */}
         <main className={`p-4 lg:p-8 ${contentClassName}`}>{children}</main>
-      </motion.div>
+      </div>
     </div>
   );
 }

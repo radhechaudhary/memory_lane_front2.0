@@ -1,12 +1,22 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  FiMenu, FiX, FiHome, FiClock, FiImage, FiMapPin, 
-  FiStar, FiUsers, FiSettings, FiLogOut, FiUser, FiShield,
-  FiPlus
-} from 'react-icons/fi';
-import { useAuth } from '../../hooks/useAuth';
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FiMenu,
+  FiX,
+  FiHome,
+  FiClock,
+  FiImage,
+  FiMapPin,
+  FiStar,
+  FiUsers,
+  FiSettings,
+  FiLogOut,
+  FiUser,
+  FiShield,
+  FiPlus,
+} from "react-icons/fi";
+import { useAuth } from "../../hooks/useAuth";
 
 const Navbar = ({ onAddMemory }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -15,17 +25,17 @@ const Navbar = ({ onAddMemory }) => {
   const location = useLocation();
 
   const navLinks = [
-    { path: '/dashboard', label: 'Dashboard', icon: FiHome },
-    { path: '/timeline', label: 'Timeline', icon: FiClock },
-    { path: '/albums', label: 'Albums', icon: FiImage },
-    { path: '/milestones', label: 'Milestones', icon: FiStar },
-    { path: '/map', label: 'Map', icon: FiMapPin },
-    { path: '/shared', label: 'Shared', icon: FiUsers },
+    { path: "/dashboard", label: "Dashboard", icon: FiHome },
+    { path: "/timeline", label: "Timeline", icon: FiClock },
+    { path: "/albums", label: "Albums", icon: FiImage },
+    { path: "/milestones", label: "Milestones", icon: FiStar },
+    { path: "/map", label: "Map", icon: FiMapPin },
+    { path: "/shared", label: "Shared", icon: FiUsers },
   ];
 
   const isActive = (path) => location.pathname === path;
-  const roleLabel = user?.role === 'admin' ? 'Admin' : 'User';
-  const RoleIcon = user?.role === 'admin' ? FiShield : FiUser;
+  const roleLabel = user?.role === "admin" ? "Admin" : "User";
+  const RoleIcon = user?.role === "admin" ? FiShield : FiUser;
 
   const handleLogout = async () => {
     await logout();
@@ -54,9 +64,10 @@ const Navbar = ({ onAddMemory }) => {
                 className={`
                   flex items-center gap-2 px-4 py-2 rounded-lg
                   text-sm font-medium transition-colors
-                  ${isActive(link.path)
-                    ? 'bg-amber-100 text-amber-800'
-                    : 'text-stone-600 hover:bg-stone-100'
+                  ${
+                    isActive(link.path)
+                      ? "bg-amber-100 text-amber-800"
+                      : "text-stone-600 hover:bg-stone-100"
                   }
                 `}
               >
@@ -77,25 +88,29 @@ const Navbar = ({ onAddMemory }) => {
             >
               <FiPlus className="w-4 h-4" />
               Add Memory
-              
             </motion.button>
 
             <div className="hidden items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 sm:flex">
               <RoleIcon className="h-4 w-4 text-amber-700" />
-              <span className="text-xs font-semibold uppercase tracking-wide text-amber-800">{roleLabel}</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-amber-800">
+                {roleLabel}
+              </span>
             </div>
 
             {/* Profile Menu */}
             <div className="relative">
               <button
-                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                onClick={() => {
+                  setIsProfileMenuOpen((prev) => !prev);
+                  setIsMobileMenuOpen(false);
+                }}
                 className="flex items-center gap-2 rounded-xl p-2 transition-colors hover:bg-stone-100"
               >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
                   {user?.avatar ? (
-                    <img 
-                      src={user.avatar} 
-                      alt={user.username} 
+                    <img
+                      src={user.avatar}
+                      alt={user.username}
                       className="w-full h-full rounded-full object-cover"
                     />
                   ) : (
@@ -112,18 +127,18 @@ const Navbar = ({ onAddMemory }) => {
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg"
+                    className="absolute right-0 mt-2 w-56 max-w-[calc(100vw-1rem)] overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg"
                   >
                     <div className="border-b border-stone-200 px-4 py-3">
                       <p className="text-sm font-medium text-stone-900">
                         {user?.name || user?.username}
                       </p>
-                      <p className="text-xs text-stone-500">
-                        {user?.email}
-                      </p>
+                      <p className="text-xs text-stone-500">{user?.email}</p>
                       <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5">
                         <RoleIcon className="h-3.5 w-3.5 text-amber-700" />
-                        <span className="text-[11px] font-semibold uppercase tracking-wide text-amber-800">{roleLabel}</span>
+                        <span className="text-[11px] font-semibold uppercase tracking-wide text-amber-800">
+                          {roleLabel}
+                        </span>
                       </div>
                     </div>
 
@@ -145,7 +160,10 @@ const Navbar = ({ onAddMemory }) => {
                         Settings
                       </Link>
                       <button
-                        onClick={handleLogout}
+                        onClick={async () => {
+                          setIsProfileMenuOpen(false);
+                          await handleLogout();
+                        }}
                         className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                       >
                         <FiLogOut className="w-4 h-4" />
@@ -159,7 +177,10 @@ const Navbar = ({ onAddMemory }) => {
 
             {/* Mobile Menu Button */}
             <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onClick={() => {
+                setIsMobileMenuOpen((prev) => !prev);
+                setIsProfileMenuOpen(false);
+              }}
               className="rounded-lg p-2 hover:bg-stone-100 md:hidden"
             >
               {isMobileMenuOpen ? (
@@ -177,14 +198,16 @@ const Navbar = ({ onAddMemory }) => {
         {isMobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className="border-t border-stone-200 bg-white md:hidden"
           >
             <div className="px-4 py-3 space-y-1">
               <div className="mb-2 inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5">
                 <RoleIcon className="h-3.5 w-3.5 text-amber-700" />
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-amber-800">{roleLabel}</span>
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-amber-800">
+                  {roleLabel}
+                </span>
               </div>
               {navLinks.map((link) => (
                 <Link
@@ -194,9 +217,10 @@ const Navbar = ({ onAddMemory }) => {
                   className={`
                     flex items-center gap-3 px-4 py-3 rounded-lg
                     font-medium transition-colors
-                    ${isActive(link.path)
-                      ? 'bg-amber-100 text-amber-800'
-                      : 'text-stone-600'
+                    ${
+                      isActive(link.path)
+                        ? "bg-amber-100 text-amber-800"
+                        : "text-stone-600"
                     }
                   `}
                 >
@@ -204,7 +228,7 @@ const Navbar = ({ onAddMemory }) => {
                   {link.label}
                 </Link>
               ))}
-              
+
               <button
                 onClick={() => {
                   onAddMemory?.();
@@ -224,4 +248,3 @@ const Navbar = ({ onAddMemory }) => {
 };
 
 export default Navbar;
-

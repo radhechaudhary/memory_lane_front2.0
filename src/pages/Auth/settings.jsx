@@ -155,6 +155,7 @@ export default function SettingsPage() {
       title="Account Settings"
       subtitle="Manage your profile, privacy, and preferences."
       contentClassName="max-w-5xl"
+      hideSidebar
     >
       {/* Back Button */}
       <button

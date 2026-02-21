@@ -1,5 +1,5 @@
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 const LoadingScreen = () => (
   <div className="flex min-h-screen items-center justify-center bg-stone-100 dark:bg-stone-950">
@@ -8,13 +8,13 @@ const LoadingScreen = () => (
 );
 
 const getHomePathForRole = (role) => {
-  if (role === 'admin') {
-    return '/admin-dashboard';
+  if (role === "admin") {
+    return "/admin-dashboard";
   }
-  if (role === 'user') {
-    return '/dashboard';
+  if (role === "user") {
+    return "/dashboard";
   }
-  return '/login';
+  return "/login";
 };
 
 const RoleRoute = ({ allowedRole, children }) => {
@@ -42,5 +42,19 @@ export const AdminRoute = ({ children }) => (
 export const UserRoute = ({ children }) => (
   <RoleRoute allowedRole="user">{children}</RoleRoute>
 );
+
+export const AuthenticatedRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
 
 export default RoleRoute;

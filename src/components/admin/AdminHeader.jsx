@@ -9,6 +9,7 @@ const pageTitles = {
   "/admin/users": "Users",
   "/admin/memories": "Memories",
   "/admin/analytics": "Analytics",
+  "/admin/support": "Support",
 };
 
 const AdminHeader = ({ onMobileMenuToggle }) => {

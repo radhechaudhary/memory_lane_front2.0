@@ -9,10 +9,10 @@ import {
   FiUsers,
   FiChevronLeft,
   FiChevronRight,
-  FiSettings,
   FiLogOut,
 } from "react-icons/fi";
 import { useAuth } from "../../hooks/useAuth";
+import { useMemory } from "../../context/MemoryContext";
 
 const UserSidebar = ({
   collapsed = false,
@@ -22,6 +22,10 @@ const UserSidebar = ({
 }) => {
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { memories = [] } = useMemory();
+  const storageLimit = 100;
+  const usedStorage = memories.length;
+  const usedPercentage = Math.min((usedStorage / storageLimit) * 100, 100);
 
   const mainLinks = [
     { path: "/dashboard", label: "Dashboard", icon: FiHome },
@@ -221,27 +225,6 @@ const UserSidebar = ({
           </AnimatePresence>
         </div>
 
-        {/* Settings Link */}
-        <Link
-          to="/settings"
-          onClick={onMobileClose}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-stone-600 hover:bg-stone-100 transition-colors"
-        >
-          <FiSettings className="w-5 h-5 flex-shrink-0" />
-          <AnimatePresence>
-            {!collapsed && (
-              <motion.span
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: "auto" }}
-                exit={{ opacity: 0, width: 0 }}
-                className="text-sm font-medium whitespace-nowrap overflow-hidden"
-              >
-                Settings
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </Link>
-
         {/* Logout Button */}
         <button
           onClick={() => logout()}
@@ -273,10 +256,18 @@ const UserSidebar = ({
             className="p-4"
           >
             <div className="bg-gradient-to-br from-amber-400 to-amber-500 rounded-xl p-4 text-white">
-              <p className="text-xs opacity-80 mb-1">This Month</p>
-              <p className="text-2xl font-bold">12 Memories</p>
-              <p className="text-xs opacity-80 mt-2">
-                ↑ 3 more than last month
+              <p className="text-xs opacity-80 mb-1">Storage Used</p>
+              <p className="text-2xl font-bold">
+                {usedStorage} / {storageLimit}
+              </p>
+              <div className="mt-3 h-2 w-full rounded-full bg-white/30 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-white"
+                  style={{ width: `${usedPercentage}%` }}
+                />
+              </div>
+              <p className="text-xs opacity-90 mt-2">
+                {storageLimit - usedStorage} memories remaining
               </p>
             </div>
           </motion.div>

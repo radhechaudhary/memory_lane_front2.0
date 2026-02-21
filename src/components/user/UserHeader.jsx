@@ -1,28 +1,41 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  FiMenu, FiSearch, FiPlus, FiBell, FiX, FiUser, FiSettings, FiLogOut
-} from 'react-icons/fi';
-import { useAuth } from '../../hooks/useAuth';
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FiMenu,
+  FiSearch,
+  FiPlus,
+  FiBell,
+  FiX,
+  FiSettings,
+} from "react-icons/fi";
+import { useAuth } from "../../hooks/useAuth";
 
 const UserHeader = ({ onMobileMenuToggle }) => {
   const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
 
   const getPageTitle = () => {
     switch (location.pathname) {
-      case '/dashboard': return 'Dashboard';
-      case '/timeline': return 'Timeline';
-      case '/albums': return 'Albums';
-      case '/milestones': return 'Milestones';
-      case '/map': return 'Memory Map';
-      case '/shared': return 'Shared Memories';
-      case '/settings': return 'Settings';
-      default: return 'Memona';
+      case "/dashboard":
+        return "Dashboard";
+      case "/timeline":
+        return "Timeline";
+      case "/albums":
+        return "Albums";
+      case "/milestones":
+        return "Milestones";
+      case "/map":
+        return "Memory Map";
+      case "/shared":
+        return "Shared Memories";
+      case "/settings":
+        return "Settings";
+      default:
+        return "Memona";
     }
   };
 
@@ -40,9 +53,7 @@ const UserHeader = ({ onMobileMenuToggle }) => {
           </button>
 
           {/* Page Title */}
-          <h1 className="text-xl font-bold text-stone-900">
-            {getPageTitle()}
-          </h1>
+          <h1 className="text-xl font-bold text-stone-900">{getPageTitle()}</h1>
         </div>
 
         {/* Right Section */}
@@ -51,8 +62,8 @@ const UserHeader = ({ onMobileMenuToggle }) => {
           <div className="hidden md:block">
             <div className="search-input">
               <FiSearch className="w-4 h-4 text-stone-400" />
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Search memories..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -75,7 +86,7 @@ const UserHeader = ({ onMobileMenuToggle }) => {
 
           {/* Add Memory Button */}
           <Link
-            to="/memory/create"
+            to="/timeline"
             className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-400 to-amber-500 text-stone-900 rounded-xl font-semibold text-sm hover:from-amber-500 hover:to-amber-600 transition-all"
           >
             <FiPlus className="w-4 h-4" />
@@ -84,7 +95,7 @@ const UserHeader = ({ onMobileMenuToggle }) => {
 
           {/* Mobile Add Button */}
           <Link
-            to="/memory/create"
+            to="/timeline"
             className="sm:hidden p-2 rounded-lg bg-amber-400 text-stone-900"
           >
             <FiPlus className="w-5 h-5" />
@@ -104,14 +115,14 @@ const UserHeader = ({ onMobileMenuToggle }) => {
             >
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center">
                 {user?.avatar ? (
-                  <img 
-                    src={user.avatar} 
-                    alt={user.username} 
+                  <img
+                    src={user.avatar}
+                    alt={user.username}
                     className="w-full h-full rounded-full object-cover"
                   />
                 ) : (
                   <span className="text-white font-semibold text-sm">
-                    {user?.username?.charAt(0).toUpperCase() || 'U'}
+                    {user?.username?.charAt(0).toUpperCase() || "U"}
                   </span>
                 )}
               </div>
@@ -127,22 +138,12 @@ const UserHeader = ({ onMobileMenuToggle }) => {
                 >
                   <div className="border-b border-stone-200 px-4 py-3">
                     <p className="text-sm font-semibold text-stone-900">
-                      {user?.name || user?.username || 'User'}
+                      {user?.name || user?.username || "User"}
                     </p>
-                    <p className="text-xs text-stone-500">
-                      {user?.email}
-                    </p>
+                    <p className="text-xs text-stone-500">{user?.email}</p>
                   </div>
 
                   <div className="py-1">
-                    <Link
-                      to="/profile"
-                      onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-stone-700 hover:bg-stone-100"
-                    >
-                      <FiUser className="w-4 h-4" />
-                      Profile
-                    </Link>
                     <Link
                       to="/settings"
                       onClick={() => setProfileOpen(false)}
@@ -151,16 +152,6 @@ const UserHeader = ({ onMobileMenuToggle }) => {
                       <FiSettings className="w-4 h-4" />
                       Settings
                     </Link>
-                    <button
-                      onClick={() => {
-                        logout();
-                        setProfileOpen(false);
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50"
-                    >
-                      <FiLogOut className="w-4 h-4" />
-                      Logout
-                    </button>
                   </div>
                 </motion.div>
               )}
@@ -174,14 +165,14 @@ const UserHeader = ({ onMobileMenuToggle }) => {
         {searchOpen && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
+            animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             className="md:hidden px-4 pb-4"
           >
             <div className="search-input">
               <FiSearch className="w-4 h-4 text-stone-400" />
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Search memories..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -197,4 +188,3 @@ const UserHeader = ({ onMobileMenuToggle }) => {
 };
 
 export default UserHeader;
-

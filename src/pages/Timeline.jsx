@@ -1,28 +1,30 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { FiPlus, FiGrid, FiList, FiCalendar } from 'react-icons/fi';
-import { useMemory } from '../context/MemoryContext';
-import MemoryCard from '../components/memory/MemoryCard';
-import MemoryForm from '../components/memory/MemoryForm';
-import TimelineItem from '../components/user/TimelineItem';
-import SearchBar from '../components/shared/SearchBar';
-import { generateTimeline } from '../utils/generateTimeline';
-import Loader from '../components/shared/Loader';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { FiPlus, FiGrid, FiList, FiCalendar } from "react-icons/fi";
+import { toast } from "react-toastify";
+import { useMemory } from "../context/MemoryContext";
+import MemoryCard from "../components/memory/MemoryCard";
+import MemoryForm from "../components/memory/MemoryForm";
+import TimelineItem from "../components/user/TimelineItem";
+import SearchBar from "../components/shared/SearchBar";
+import { generateTimeline } from "../utils/generateTimeline";
+import Loader from "../components/shared/Loader";
 
 const Timeline = () => {
-  const { 
-    memories, 
-    loading, 
-    fetchMemories, 
-    deleteMemory, 
+  const {
+    memories,
+    loading,
+    fetchMemories,
+    createMemory,
+    deleteMemory,
     toggleFavorite,
-    updateMemory 
+    updateMemory,
   } = useMemory();
-  
-  const [viewMode, setViewMode] = useState('timeline'); // 'grid', 'timeline'
+
+  const [viewMode, setViewMode] = useState("timeline"); // 'grid', 'timeline'
   const [showMemoryForm, setShowMemoryForm] = useState(false);
   const [editingMemory, setEditingMemory] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchMemories();
@@ -33,10 +35,13 @@ const Timeline = () => {
 
   // Filter memories by search
   const filteredMemories = searchQuery
-    ? memories.filter(m => 
-        m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.tags?.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()))
+    ? memories.filter(
+        (m) =>
+          m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          m.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          m.tags?.some((t) =>
+            t.toLowerCase().includes(searchQuery.toLowerCase()),
+          ),
       )
     : memories;
 
@@ -46,7 +51,7 @@ const Timeline = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this memory?')) {
+    if (window.confirm("Are you sure you want to delete this memory?")) {
       await deleteMemory(id);
     }
   };
@@ -55,10 +60,20 @@ const Timeline = () => {
   const getTimelineEntries = () => {
     const entries = [];
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
     ];
-    
+
     Object.entries(timelineData).forEach(([year, monthsData]) => {
       months.forEach((month) => {
         const monthMemories = monthsData[month];
@@ -66,12 +81,12 @@ const Timeline = () => {
           entries.push({
             year,
             month,
-            memories: monthMemories
+            memories: monthMemories,
           });
         }
       });
     });
-    
+
     return entries.sort((a, b) => {
       if (a.year !== b.year) return parseInt(b.year) - parseInt(a.year);
       return months.indexOf(b.month) - months.indexOf(a.month);
@@ -91,11 +106,10 @@ const Timeline = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">
-            Timeline
-          </h1>
+          <h1 className="text-2xl font-bold text-stone-900">Timeline</h1>
           <p className="text-stone-500">
-            {memories.length} {memories.length === 1 ? 'memory' : 'memories'} in your journey
+            {memories.length} {memories.length === 1 ? "memory" : "memories"} in
+            your journey
           </p>
         </div>
 
@@ -109,21 +123,21 @@ const Timeline = () => {
           {/* View Toggle */}
           <div className="flex bg-stone-100 rounded-xl p-1">
             <button
-              onClick={() => setViewMode('grid')}
+              onClick={() => setViewMode("grid")}
               className={`p-2 rounded-lg transition-all ${
-                viewMode === 'grid' 
-                  ? 'bg-white text-amber-600 shadow-sm' 
-                  : 'text-stone-500 hover:text-stone-700'
+                viewMode === "grid"
+                  ? "bg-white text-amber-600 shadow-sm"
+                  : "text-stone-500 hover:text-stone-700"
               }`}
             >
               <FiGrid className="w-5 h-5" />
             </button>
             <button
-              onClick={() => setViewMode('timeline')}
+              onClick={() => setViewMode("timeline")}
               className={`p-2 rounded-lg transition-all ${
-                viewMode === 'timeline' 
-                  ? 'bg-white text-amber-600 shadow-sm' 
-                  : 'text-stone-500 hover:text-stone-700'
+                viewMode === "timeline"
+                  ? "bg-white text-amber-600 shadow-sm"
+                  : "text-stone-500 hover:text-stone-700"
               }`}
             >
               <FiList className="w-5 h-5" />
@@ -156,12 +170,10 @@ const Timeline = () => {
             No memories yet
           </h3>
           <p className="text-stone-500 max-w-md mb-6">
-            Start capturing your precious moments and they'll appear here on your timeline.
+            Start capturing your precious moments and they'll appear here on
+            your timeline.
           </p>
-          <button
-            onClick={() => setShowMemoryForm(true)}
-            className="btn-gold"
-          >
+          <button onClick={() => setShowMemoryForm(true)} className="btn-gold">
             <FiPlus className="w-4 h-4 mr-2" />
             Create Your First Memory
           </button>
@@ -172,7 +184,7 @@ const Timeline = () => {
             No memories found for "{searchQuery}"
           </p>
         </div>
-      ) : viewMode === 'timeline' ? (
+      ) : viewMode === "timeline" ? (
         /* Vertical Timeline View */
         <div className="max-w-4xl mx-auto">
           {getTimelineEntries().map((entry, entryIndex) => (
@@ -202,7 +214,7 @@ const Timeline = () => {
                     key={memory._id}
                     memory={memory}
                     index={index}
-                    alignment={index % 2 === 0 ? 'left' : 'right'}
+                    alignment={index % 2 === 0 ? "left" : "right"}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                     onToggleFavorite={toggleFavorite}
@@ -235,8 +247,23 @@ const Timeline = () => {
           setEditingMemory(null);
         }}
         onSubmit={async (data) => {
+          let result;
           if (editingMemory) {
-            await updateMemory(editingMemory._id, data);
+            result = await updateMemory(editingMemory._id, data);
+            if (result?.success) {
+              toast.success("Memory updated successfully!");
+            } else {
+              toast.error(result?.error || "Failed to update memory");
+              return;
+            }
+          } else {
+            result = await createMemory(data);
+            if (result?.success) {
+              toast.success("Memory created successfully!");
+            } else {
+              toast.error(result?.error || "Failed to create memory");
+              return;
+            }
           }
           setShowMemoryForm(false);
           setEditingMemory(null);
@@ -248,4 +275,3 @@ const Timeline = () => {
 };
 
 export default Timeline;
-

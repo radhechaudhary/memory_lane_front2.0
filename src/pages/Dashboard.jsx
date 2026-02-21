@@ -9,6 +9,7 @@ import {
   FiSun,
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 import { useAuth } from "../hooks/useAuth";
 import { useMemory } from "../context/MemoryContext";
 import MemoryCard from "../components/memory/MemoryCard";
@@ -25,6 +26,7 @@ const Dashboard = () => {
     milestones = [],
     loading,
     fetchMemories,
+    createMemory,
     toggleFavorite,
   } = useMemory();
   const [showMemoryForm, setShowMemoryForm] = useState(false);
@@ -130,8 +132,7 @@ const Dashboard = () => {
             }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowReminisce(true)}
-            disabled={memories.length === 0}
-            className="btn-reminisce disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-reminisce"
           >
             <FiSun className="w-5 h-5" />
             Reminisce
@@ -292,8 +293,13 @@ const Dashboard = () => {
         isOpen={showMemoryForm}
         onClose={() => setShowMemoryForm(false)}
         onSubmit={async (data) => {
-          // Handle form submission
-          setShowMemoryForm(false);
+          const result = await createMemory(data);
+          if (result?.success) {
+            toast.success("Memory created successfully!");
+            setShowMemoryForm(false);
+          } else {
+            toast.error(result?.error || "Failed to create memory");
+          }
         }}
       />
 

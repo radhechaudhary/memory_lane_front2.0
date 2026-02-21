@@ -1,7 +1,15 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiX, FiChevronLeft, FiChevronRight, FiHeart, FiMapPin, FiCalendar, FiImage, FiStar } from 'react-icons/fi';
-import { formatDate } from '../../utils/formatDate';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FiX,
+  FiChevronLeft,
+  FiChevronRight,
+  FiMapPin,
+  FiCalendar,
+  FiImage,
+  FiStar,
+} from "react-icons/fi";
+import { formatDate } from "../../utils/formatDate";
 
 const ReminisceModal = ({ isOpen, onClose, memories = [] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -14,6 +22,12 @@ const ReminisceModal = ({ isOpen, onClose, memories = [] }) => {
       setCurrentIndex(randomIndex);
     }
   }, [isOpen, memories.length]);
+
+  useEffect(() => {
+    if (currentIndex >= memories.length && memories.length > 0) {
+      setCurrentIndex(0);
+    }
+  }, [currentIndex, memories.length]);
 
   const currentMemory = memories[currentIndex];
 
@@ -31,9 +45,56 @@ const ReminisceModal = ({ isOpen, onClose, memories = [] }) => {
     onClose();
   };
 
-  if (!isOpen || !currentMemory) return null;
+  if (!isOpen) return null;
 
-  const mainImage = currentMemory.media?.find(m => m.type === 'image');
+  if (!currentMemory) {
+    return (
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          onClick={handleClose}
+        >
+          <div className="absolute inset-0 bg-stone-900/80 backdrop-blur-sm" />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="relative w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={handleClose}
+              className="absolute right-4 top-4 rounded-full p-2 text-stone-500 transition-colors hover:bg-stone-100"
+            >
+              <FiX className="h-5 w-5" />
+            </button>
+
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
+              <FiStar className="h-8 w-8 text-amber-500" />
+            </div>
+            <h3 className="text-xl font-semibold text-stone-900">
+              No memories yet
+            </h3>
+            <p className="mt-2 text-sm text-stone-600">
+              Create your first memory to start reminiscing.
+            </p>
+            <button
+              onClick={handleClose}
+              className="mt-6 rounded-full bg-amber-400 px-6 py-2.5 text-sm font-semibold text-stone-900 transition-colors hover:bg-amber-300"
+            >
+              Got it
+            </button>
+          </motion.div>
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
+
+  const mainImage = currentMemory.media?.find((m) => m.type === "image");
 
   return (
     <AnimatePresence>
@@ -52,7 +113,7 @@ const ReminisceModal = ({ isOpen, onClose, memories = [] }) => {
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
           className="relative w-full max-w-2xl bg-white rounded-3xl overflow-hidden shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
@@ -178,9 +239,10 @@ const ReminisceModal = ({ isOpen, onClose, memories = [] }) => {
                     onClick={() => setCurrentIndex(index)}
                     className={`
                       w-2 h-2 rounded-full transition-all
-                      ${index === currentIndex 
-                        ? 'bg-amber-500 w-6' 
-                        : 'bg-stone-300 hover:bg-stone-400'
+                      ${
+                        index === currentIndex
+                          ? "bg-amber-500 w-6"
+                          : "bg-stone-300 hover:bg-stone-400"
                       }
                     `}
                   />
@@ -203,4 +265,3 @@ const ReminisceModal = ({ isOpen, onClose, memories = [] }) => {
 };
 
 export default ReminisceModal;
-

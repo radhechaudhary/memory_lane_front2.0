@@ -2,7 +2,16 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiArrowLeft } from "react-icons/fi";
+import {
+  FiArrowLeft,
+  FiUser,
+  FiShield,
+  FiBell,
+  FiHardDrive,
+  FiCreditCard,
+  FiSun,
+  FiAlertTriangle,
+} from "react-icons/fi";
 import { useThemeStore } from "../../store/themeStore";
 import AppShell from "../../components/layout/AppShell";
 
@@ -131,13 +140,13 @@ export default function SettingsPage() {
   );
 
   const tabs = [
-    { id: "profile", label: "Profile", icon: "fa-user" },
-    { id: "privacy", label: "Privacy & Security", icon: "fa-shield-alt" },
-    { id: "notifications", label: "Notifications", icon: "fa-bell" },
-    { id: "storage", label: "Storage", icon: "fa-cloud" },
-    { id: "subscription", label: "Subscription", icon: "fa-credit-card" },
-    { id: "appearance", label: "Appearance", icon: "fa-palette" },
-    { id: "danger", label: "Danger Zone", icon: "fa-exclamation-triangle" },
+    { id: "profile", label: "Profile", icon: FiUser },
+    { id: "privacy", label: "Privacy & Security", icon: FiShield },
+    { id: "notifications", label: "Notifications", icon: FiBell },
+    { id: "storage", label: "Storage", icon: FiHardDrive },
+    { id: "subscription", label: "Subscription", icon: FiCreditCard },
+    { id: "appearance", label: "Appearance", icon: FiSun },
+    { id: "danger", label: "Danger Zone", icon: FiAlertTriangle },
   ];
 
   return (
@@ -165,11 +174,11 @@ export default function SettingsPage() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
                   activeTab === tab.id
-                    ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
-                    : "text-[var(--color-text-secondary)] hover:bg-stone-100/50 dark:hover:bg-gray-700/50 hover:text-[var(--color-text-primary)]"
+                    ? "bg-amber-100 text-stone-900"
+                    : "text-[var(--color-text-secondary)] hover:bg-stone-100/50 hover:text-[var(--color-text-primary)]"
                 }`}
               >
-                <i className={`fas ${tab.icon} w-5`}></i>
+                <tab.icon className="w-5 h-5" />
                 <span className="hidden md:inline">{tab.label}</span>
               </button>
             ))}

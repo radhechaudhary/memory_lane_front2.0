@@ -1,47 +1,47 @@
-import { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiX } from 'react-icons/fi';
+import { useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiX } from "react-icons/fi";
 
 const Modal = ({
   isOpen,
   onClose,
   title,
   children,
-  size = 'md',
+  size = "md",
   showCloseButton = true,
   closeOnOverlayClick = true,
-  className = ''
+  className = "",
 }) => {
   // Handle escape key
   useEffect(() => {
     const handleEscape = (e) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === "Escape" && isOpen) {
         onClose();
       }
     };
 
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
   const sizeClasses = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
-    full: 'max-w-6xl'
+    sm: "max-w-md",
+    md: "max-w-lg",
+    lg: "max-w-2xl",
+    xl: "max-w-4xl",
+    full: "max-w-6xl",
   };
 
   return (
@@ -66,7 +66,7 @@ const Modal = ({
             transition={{ duration: 0.2 }}
             className={`
               relative w-full ${sizeClasses[size]} 
-              bg-white dark:bg-gray-800 
+              bg-white 
               rounded-2xl shadow-xl 
               max-h-[90vh] overflow-hidden
               flex flex-col
@@ -75,27 +75,25 @@ const Modal = ({
           >
             {/* Header */}
             {(title || showCloseButton) && (
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
                 {title && (
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  <h2 className="text-xl font-semibold text-gray-900">
                     {title}
                   </h2>
                 )}
                 {showCloseButton && (
                   <button
                     onClick={onClose}
-                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="p-2 rounded-full hover:bg-gray-100 transition-colors"
                   >
-                    <FiX className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    <FiX className="w-5 h-5 text-gray-500" />
                   </button>
                 )}
               </div>
             )}
 
             {/* Body */}
-            <div className="flex-1 overflow-y-auto p-6">
-              {children}
-            </div>
+            <div className="flex-1 overflow-y-auto p-6">{children}</div>
           </motion.div>
         </div>
       )}
@@ -104,4 +102,3 @@ const Modal = ({
 };
 
 export default Modal;
-

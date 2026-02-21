@@ -1,15 +1,8 @@
 // Admin Header - Glass morphism header with search & profile
 import { useState, useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  FiSearch,
-  FiMenu,
-  FiBell,
-  FiLogOut,
-  FiSettings,
-  FiUser,
-} from "react-icons/fi";
+import { FiSearch, FiMenu, FiBell, FiSettings } from "react-icons/fi";
 
 const pageTitles = {
   "/admin": "Overview",
@@ -177,24 +170,16 @@ const AdminHeader = ({ onMobileMenuToggle }) => {
                     </p>
                   </div>
                   <div className="p-2">
-                    <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-stone-100 transition-colors text-left">
-                      <FiUser className="w-4 h-4 text-[var(--color-text-secondary)]" />
-                      <span className="text-sm font-medium text-[var(--color-text-primary)]">
-                        Profile
-                      </span>
-                    </button>
-                    <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-stone-100 transition-colors text-left">
+                    <Link
+                      to="/settings"
+                      onClick={() => setShowProfileDropdown(false)}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-stone-100 transition-colors text-left"
+                    >
                       <FiSettings className="w-4 h-4 text-[var(--color-text-secondary)]" />
                       <span className="text-sm font-medium text-[var(--color-text-primary)]">
                         Settings
                       </span>
-                    </button>
-                    <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-rose-50 transition-colors text-left">
-                      <FiLogOut className="w-4 h-4 text-rose-500" />
-                      <span className="text-sm font-medium text-rose-600">
-                        Logout
-                      </span>
-                    </button>
+                    </Link>
                   </div>
                 </motion.div>
               )}

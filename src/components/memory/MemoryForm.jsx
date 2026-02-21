@@ -1,130 +1,141 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  FiX, FiImage, FiMapPin, FiCalendar, FiTag, FiSmile,
-  FiUpload, FiTrash2, FiLock, FiGlobe
-} from 'react-icons/fi';
-import { formatDateForInput } from '../../utils/formatDate';
-import { MEMORY_CATEGORIES, EMOTIONS } from '../../utils/constants';
-import Modal from '../shared/Modal';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  FiX,
+  FiImage,
+  FiMapPin,
+  FiCalendar,
+  FiTag,
+  FiSmile,
+  FiUpload,
+  FiTrash2,
+  FiLock,
+  FiGlobe,
+} from "react-icons/fi";
+import { formatDateForInput } from "../../utils/formatDate";
+import { MEMORY_CATEGORIES, EMOTIONS } from "../../utils/constants";
+import Modal from "../shared/Modal";
 
-const MemoryForm = ({ 
-  isOpen, 
-  onClose, 
-  onSubmit, 
-  memory = null, 
-  loading = false 
+const MemoryForm = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  memory = null,
+  loading = false,
 }) => {
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
+    title: "",
+    description: "",
     date: formatDateForInput(new Date()),
-    location: { name: '', coordinates: null },
+    location: { name: "", coordinates: null },
     media: [],
     tags: [],
     emotions: [],
-    category: 'moment',
-    isPrivate: true
+    category: "moment",
+    isPrivate: true,
   });
-  
-  const [tagInput, setTagInput] = useState('');
+
+  const [tagInput, setTagInput] = useState("");
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (memory) {
       setFormData({
-        title: memory.title || '',
-        description: memory.description || '',
+        title: memory.title || "",
+        description: memory.description || "",
         date: formatDateForInput(memory.date) || formatDateForInput(new Date()),
-        location: memory.location || { name: '', coordinates: null },
+        location: memory.location || { name: "", coordinates: null },
         media: memory.media || [],
         tags: memory.tags || [],
         emotions: memory.emotions || [],
-        category: memory.category || 'moment',
-        isPrivate: memory.isPrivate !== undefined ? memory.isPrivate : true
+        category: memory.category || "moment",
+        isPrivate: memory.isPrivate !== undefined ? memory.isPrivate : true,
       });
     } else {
       setFormData({
-        title: '',
-        description: '',
+        title: "",
+        description: "",
         date: formatDateForInput(new Date()),
-        location: { name: '', coordinates: null },
+        location: { name: "", coordinates: null },
         media: [],
         tags: [],
         emotions: [],
-        category: 'moment',
-        isPrivate: true
+        category: "moment",
+        isPrivate: true,
       });
     }
-    setTagInput('');
+    setTagInput("");
     setErrors({});
   }, [memory, isOpen]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: null }));
+      setErrors((prev) => ({ ...prev, [name]: null }));
     }
   };
 
   const handleAddTag = (e) => {
-    if (e.key === 'Enter' && tagInput.trim()) {
+    if (e.key === "Enter" && tagInput.trim()) {
       e.preventDefault();
       if (!formData.tags.includes(tagInput.trim())) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          tags: [...prev.tags, tagInput.trim()]
+          tags: [...prev.tags, tagInput.trim()],
         }));
       }
-      setTagInput('');
+      setTagInput("");
     }
   };
 
   const handleRemoveTag = (tag) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      tags: prev.tags.filter(t => t !== tag)
+      tags: prev.tags.filter((t) => t !== tag),
     }));
   };
 
   const handleToggleEmotion = (emotion) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       emotions: prev.emotions.includes(emotion)
-        ? prev.emotions.filter(e => e !== emotion)
-        : [...prev.emotions, emotion]
+        ? prev.emotions.filter((e) => e !== emotion)
+        : [...prev.emotions, emotion],
     }));
   };
 
   const handleMediaUpload = (e) => {
     const files = Array.from(e.target.files);
-    const newMedia = files.map(file => ({
-      type: file.type.startsWith('image/') ? 'image' : 
-            file.type.startsWith('video/') ? 'video' : 'audio',
+    const newMedia = files.map((file) => ({
+      type: file.type.startsWith("image/")
+        ? "image"
+        : file.type.startsWith("video/")
+          ? "video"
+          : "audio",
       url: URL.createObjectURL(file),
-      file
+      file,
     }));
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      media: [...prev.media, ...newMedia]
+      media: [...prev.media, ...newMedia],
     }));
   };
 
   const handleRemoveMedia = (index) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      media: prev.media.filter((_, i) => i !== index)
+      media: prev.media.filter((_, i) => i !== index),
     }));
   };
 
   const validate = () => {
     const newErrors = {};
     if (!formData.title.trim()) {
-      newErrors.title = 'Title is required';
+      newErrors.title = "Title is required";
     }
     if (!formData.date) {
-      newErrors.date = 'Date is required';
+      newErrors.date = "Date is required";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -141,13 +152,13 @@ const MemoryForm = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={memory ? 'Edit Memory' : 'Create Memory'}
+      title={memory ? "Edit Memory" : "Create Memory"}
       size="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Title */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Title *
           </label>
           <input
@@ -157,11 +168,11 @@ const MemoryForm = ({
             onChange={handleChange}
             className={`
               w-full px-4 py-2.5 rounded-xl border-2 
-              bg-gray-50 dark:bg-gray-800 
-              text-gray-900 dark:text-white
+              bg-gray-50 
+              text-gray-900
               focus:ring-2 focus:ring-indigo-500/20 
               focus:border-indigo-500 outline-none transition-all
-              ${errors.title ? 'border-red-500' : 'border-transparent'}
+              ${errors.title ? "border-red-500" : "border-transparent"}
             `}
             placeholder="What's this memory about?"
           />
@@ -172,7 +183,7 @@ const MemoryForm = ({
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Description
           </label>
           <textarea
@@ -180,7 +191,7 @@ const MemoryForm = ({
             value={formData.description}
             onChange={handleChange}
             rows={3}
-            className="w-full px-4 py-2.5 rounded-xl border-2 border-transparent bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all resize-none"
+            className="w-full px-4 py-2.5 rounded-xl border-2 border-transparent bg-gray-50 text-gray-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all resize-none"
             placeholder="Tell us more about this memory..."
           />
         </div>
@@ -188,7 +199,7 @@ const MemoryForm = ({
         {/* Date & Category */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Date *
             </label>
             <div className="relative">
@@ -200,11 +211,11 @@ const MemoryForm = ({
                 onChange={handleChange}
                 className={`
                   w-full pl-10 pr-4 py-2.5 rounded-xl border-2 
-                  bg-gray-50 dark:bg-gray-800 
-                  text-gray-900 dark:text-white
+                  bg-gray-50 
+                  text-gray-900
                   focus:ring-2 focus:ring-indigo-500/20 
                   focus:border-indigo-500 outline-none transition-all
-                  ${errors.date ? 'border-red-500' : 'border-transparent'}
+                  ${errors.date ? "border-red-500" : "border-transparent"}
                 `}
               />
             </div>
@@ -214,16 +225,16 @@ const MemoryForm = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Category
             </label>
             <select
               name="category"
               value={formData.category}
               onChange={handleChange}
-              className="w-full px-4 py-2.5 rounded-xl border-2 border-transparent bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+              className="w-full px-4 py-2.5 rounded-xl border-2 border-transparent bg-gray-50 text-gray-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
             >
-              {MEMORY_CATEGORIES.map(cat => (
+              {MEMORY_CATEGORIES.map((cat) => (
                 <option key={cat.value} value={cat.value}>
                   {cat.icon} {cat.label}
                 </option>
@@ -234,7 +245,7 @@ const MemoryForm = ({
 
         {/* Location */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Location
           </label>
           <div className="relative">
@@ -243,11 +254,13 @@ const MemoryForm = ({
               type="text"
               name="locationName"
               value={formData.location.name}
-              onChange={(e) => setFormData(prev => ({
-                ...prev,
-                location: { ...prev.location, name: e.target.value }
-              }))}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border-2 border-transparent bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  location: { ...prev.location, name: e.target.value },
+                }))
+              }
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border-2 border-transparent bg-gray-50 text-gray-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
               placeholder="Where did this happen?"
             />
           </div>
@@ -255,18 +268,28 @@ const MemoryForm = ({
 
         {/* Media Upload */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Photos & Videos
           </label>
-          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-4">
+          <div className="border-2 border-dashed border-gray-300 rounded-xl p-4">
             {formData.media.length > 0 ? (
               <div className="grid grid-cols-4 gap-2 mb-4">
                 {formData.media.map((item, index) => (
-                  <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
-                    {item.type === 'image' ? (
-                      <img src={item.url} alt="" className="w-full h-full object-cover" />
+                  <div
+                    key={index}
+                    className="relative aspect-square rounded-lg overflow-hidden"
+                  >
+                    {item.type === "image" ? (
+                      <img
+                        src={item.url}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
-                      <video src={item.url} className="w-full h-full object-cover" />
+                      <video
+                        src={item.url}
+                        className="w-full h-full object-cover"
+                      />
                     )}
                     <button
                       type="button"
@@ -279,8 +302,8 @@ const MemoryForm = ({
                 ))}
               </div>
             ) : null}
-            
-            <label className="flex items-center justify-center gap-2 cursor-pointer py-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+
+            <label className="flex items-center justify-center gap-2 cursor-pointer py-2 text-gray-500 hover:text-gray-700 transition-colors">
               <FiUpload className="w-5 h-5" />
               <span className="text-sm">Upload photos or videos</span>
               <input
@@ -296,20 +319,21 @@ const MemoryForm = ({
 
         {/* Emotions */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             How did you feel?
           </label>
           <div className="flex flex-wrap gap-2">
-            {EMOTIONS.map(emotion => (
+            {EMOTIONS.map((emotion) => (
               <button
                 key={emotion.value}
                 type="button"
                 onClick={() => handleToggleEmotion(emotion.value)}
                 className={`
                   px-3 py-1.5 rounded-full text-sm font-medium transition-all
-                  ${formData.emotions.includes(emotion.value)
-                    ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  ${
+                    formData.emotions.includes(emotion.value)
+                      ? "bg-indigo-100 text-indigo-600"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }
                 `}
               >
@@ -321,7 +345,7 @@ const MemoryForm = ({
 
         {/* Tags */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Tags
           </label>
           <div className="relative">
@@ -331,7 +355,7 @@ const MemoryForm = ({
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               onKeyDown={handleAddTag}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border-2 border-transparent bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border-2 border-transparent bg-gray-50 text-gray-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
               placeholder="Press Enter to add tags"
             />
           </div>
@@ -340,13 +364,13 @@ const MemoryForm = ({
               {formData.tags.map((tag, index) => (
                 <span
                   key={index}
-                  className="inline-flex items-center gap-1 px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full text-sm"
+                  className="inline-flex items-center gap-1 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-sm"
                 >
                   #{tag}
                   <button
                     type="button"
                     onClick={() => handleRemoveTag(tag)}
-                    className="hover:text-indigo-800 dark:hover:text-indigo-200"
+                    className="hover:text-indigo-800"
                   >
                     <FiX className="w-3 h-3" />
                   </button>
@@ -360,12 +384,15 @@ const MemoryForm = ({
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => setFormData(prev => ({ ...prev, isPrivate: true }))}
+            onClick={() =>
+              setFormData((prev) => ({ ...prev, isPrivate: true }))
+            }
             className={`
               flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all
-              ${formData.isPrivate 
-                ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400' 
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+              ${
+                formData.isPrivate
+                  ? "bg-indigo-100 text-indigo-600"
+                  : "bg-gray-100 text-gray-600"
               }
             `}
           >
@@ -374,12 +401,15 @@ const MemoryForm = ({
           </button>
           <button
             type="button"
-            onClick={() => setFormData(prev => ({ ...prev, isPrivate: false }))}
+            onClick={() =>
+              setFormData((prev) => ({ ...prev, isPrivate: false }))
+            }
             className={`
               flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all
-              ${!formData.isPrivate 
-                ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400' 
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+              ${
+                !formData.isPrivate
+                  ? "bg-indigo-100 text-indigo-600"
+                  : "bg-gray-100 text-gray-600"
               }
             `}
           >
@@ -389,11 +419,11 @@ const MemoryForm = ({
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
           <button
             type="button"
             onClick={onClose}
-            className="px-6 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+            className="px-6 py-2.5 text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
           >
             Cancel
           </button>
@@ -402,9 +432,9 @@ const MemoryForm = ({
             disabled={loading}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-2.5 bg-yellow-600 hover:bg-yellow-700 text-white rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Saving...' : memory ? 'Update Memory' : 'Create Memory'}
+            {loading ? "Saving..." : memory ? "Update Memory" : "Create Memory"}
           </motion.button>
         </div>
       </form>
@@ -413,4 +443,3 @@ const MemoryForm = ({
 };
 
 export default MemoryForm;
-

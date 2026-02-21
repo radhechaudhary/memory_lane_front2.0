@@ -59,10 +59,10 @@ const Albums = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-stone-900">
             Albums
           </h1>
-          <p className="text-gray-500 dark:text-gray-400">
+          <p className="text-stone-500">
             {albums.length} {albums.length === 1 ? 'album' : 'albums'} to organize your memories
           </p>
         </div>
@@ -81,7 +81,7 @@ const Albums = () => {
               setEditingAlbum(null);
               setShowAlbumForm(true);
             }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 text-stone-900 rounded-xl font-semibold text-sm hover:from-amber-500 hover:to-amber-600 transition-all"
           >
             <FiPlus className="w-5 h-5" />
             Create Album
@@ -92,25 +92,25 @@ const Albums = () => {
       {/* Content */}
       {albums.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
-            <FiImage className="w-8 h-8 text-gray-400" />
+          <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mb-4">
+            <FiImage className="w-8 h-8 text-amber-400" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+          <h3 className="text-lg font-semibold text-stone-900 mb-2">
             No albums yet
           </h3>
-          <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
+          <p className="text-stone-500 max-w-md mb-6">
             Create albums to organize your memories into collections.
           </p>
           <button
             onClick={() => setShowAlbumForm(true)}
-            className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-colors"
+            className="btn-gold"
           >
             Create Your First Album
           </button>
         </div>
       ) : searchQuery && filteredAlbums.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-gray-500 dark:text-gray-400">
+          <p className="text-stone-500">
             No albums found for "{searchQuery}"
           </p>
         </div>

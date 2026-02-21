@@ -1,68 +1,50 @@
-import { useState } from 'react';
-import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import Navbar from './components/layout/Navbar';
-import Sidebar from './components/layout/Sidebar';
-import { AdminRoute, UserRoute } from './components/ProtectedRoute';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { MemoryProvider } from './context/MemoryContext';
-import { ThemeProvider } from './context/ThemeContext';
-import AdminLayout from './components/admin/AdminLayout';
-import AdminOverview from './pages/admin/AdminOverview';
-import AdminUsers from './pages/admin/AdminUsers';
-import AdminMemories from './pages/admin/AdminMemories';
-import AdminAnalytics from './pages/admin/AdminAnalytics';
-import Register from './pages/Auth/Register';
-import Login from './pages/Auth/Login';
-import Dashboard from './pages/Dashboard';
-import LandingPage from './pages/LandingPage';
-import Timeline from './pages/Timeline';
-import Albums from './pages/Albums';
-import Milestones from './pages/Milestones';
-import MapView from './pages/MapView';
-import SharedMemories from './pages/SharedMemories';
-import NotFound from './pages/NotFound';
-
-const AppLayout = ({ children }) => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
-  return (
-    <div className="min-h-screen bg-stone-100">
-      <Navbar />
-      <div className="flex">
-        <Sidebar
-          collapsed={sidebarCollapsed}
-          onToggle={() => setSidebarCollapsed((prev) => !prev)}
-        />
-        <main
-          className={`flex-1 p-6 transition-all duration-300 ${
-            sidebarCollapsed ? 'ml-20' : 'ml-[260px]'
-          }`}
-        >
-          {children}
-        </main>
-      </div>
-    </div>
-  );
-};
+import {
+  BrowserRouter as Router,
+  Navigate,
+  Route,
+  Routes,
+} from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { AdminRoute, UserRoute } from "./components/ProtectedRoute";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { MemoryProvider } from "./context/MemoryContext";
+import { ThemeProvider } from "./context/ThemeContext";
+import AdminLayout from "./components/admin/AdminLayout";
+import UserLayout from "./components/user/UserLayout";
+import AdminOverview from "./pages/admin/AdminOverview";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminMemories from "./pages/admin/AdminMemories";
+import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import Register from "./pages/Auth/Register";
+import Login from "./pages/Auth/Login";
+import Settings from "./pages/Auth/settings";
+import Support from "./pages/Auth/support";
+import Dashboard from "./pages/Dashboard";
+import LandingPage from "./pages/LandingPage";
+import Timeline from "./pages/Timeline";
+import Albums from "./pages/Albums";
+import Milestones from "./pages/Milestones";
+import MapView from "./pages/MapView";
+import SharedMemories from "./pages/SharedMemories";
+import NotFound from "./pages/NotFound";
 
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-stone-100">
+      <div className="flex min-h-screen items-center justify-center bg-[#F8F6F2]">
         <div className="h-10 w-10 animate-spin rounded-full border-2 border-amber-400 border-t-transparent" />
       </div>
     );
   }
 
-  if (user?.role === 'admin') {
+  if (user?.role === "admin") {
     return <Navigate to="/admin" replace />;
   }
 
-  if (user?.role === 'user') {
+  if (user?.role === "user") {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -72,14 +54,7 @@ const PublicRoute = ({ children }) => {
 const AppRoutes = () => (
   <>
     <Routes>
-      <Route
-        path="/"
-        element={
-          <PublicRoute>
-            <LandingPage />
-          </PublicRoute>
-        }
-      />
+      <Route path="/" element={<LandingPage />} />
       <Route
         path="/login"
         element={
@@ -131,9 +106,9 @@ const AppRoutes = () => (
         path="/dashboard"
         element={
           <UserRoute>
-            <AppLayout>
+            <UserLayout>
               <Dashboard />
-            </AppLayout>
+            </UserLayout>
           </UserRoute>
         }
       />
@@ -141,9 +116,9 @@ const AppRoutes = () => (
         path="/timeline"
         element={
           <UserRoute>
-            <AppLayout>
+            <UserLayout>
               <Timeline />
-            </AppLayout>
+            </UserLayout>
           </UserRoute>
         }
       />
@@ -151,9 +126,9 @@ const AppRoutes = () => (
         path="/albums"
         element={
           <UserRoute>
-            <AppLayout>
+            <UserLayout>
               <Albums />
-            </AppLayout>
+            </UserLayout>
           </UserRoute>
         }
       />
@@ -161,9 +136,9 @@ const AppRoutes = () => (
         path="/milestones"
         element={
           <UserRoute>
-            <AppLayout>
+            <UserLayout>
               <Milestones />
-            </AppLayout>
+            </UserLayout>
           </UserRoute>
         }
       />
@@ -171,9 +146,9 @@ const AppRoutes = () => (
         path="/map"
         element={
           <UserRoute>
-            <AppLayout>
+            <UserLayout>
               <MapView />
-            </AppLayout>
+            </UserLayout>
           </UserRoute>
         }
       />
@@ -181,9 +156,25 @@ const AppRoutes = () => (
         path="/shared"
         element={
           <UserRoute>
-            <AppLayout>
+            <UserLayout>
               <SharedMemories />
-            </AppLayout>
+            </UserLayout>
+          </UserRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <UserRoute>
+            <Settings />
+          </UserRoute>
+        }
+      />
+      <Route
+        path="/support"
+        element={
+          <UserRoute>
+            <Support />
           </UserRoute>
         }
       />
@@ -217,4 +208,3 @@ const App = () => (
 );
 
 export default App;
-

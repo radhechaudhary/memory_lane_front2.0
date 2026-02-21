@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiUsers, FiLock, FiGlobe, FiHeart } from 'react-icons/fi';
+import { FiUsers, FiGlobe, FiLock } from 'react-icons/fi';
 import { useMemory } from '../context/MemoryContext';
 import MemoryCard from '../components/memory/MemoryCard';
 import SearchBar from '../components/shared/SearchBar';
@@ -39,10 +39,10 @@ const SharedMemories = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-stone-900">
             Shared Memories
           </h1>
-          <p className="text-gray-500 dark:text-gray-400">
+          <p className="text-stone-500">
             Memories shared with you by others
           </p>
         </div>
@@ -61,10 +61,10 @@ const SharedMemories = () => {
         <button
           onClick={() => setFilter('all')}
           className={`
-            px-4 py-2 rounded-xl text-sm font-medium transition-colors
+            px-4 py-2 rounded-xl text-sm font-medium transition-all
             ${filter === 'all' 
-              ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400' 
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+              ? 'bg-amber-100 text-amber-700' 
+              : 'bg-white text-stone-600 hover:bg-stone-100 border border-stone-200'
             }
           `}
         >
@@ -73,10 +73,10 @@ const SharedMemories = () => {
         <button
           onClick={() => setFilter('public')}
           className={`
-            px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2
+            px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2
             ${filter === 'public' 
-              ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400' 
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+              ? 'bg-amber-100 text-amber-700' 
+              : 'bg-white text-stone-600 hover:bg-stone-100 border border-stone-200'
             }
           `}
         >
@@ -86,10 +86,10 @@ const SharedMemories = () => {
         <button
           onClick={() => setFilter('shared')}
           className={`
-            px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2
+            px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2
             ${filter === 'shared' 
-              ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400' 
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+              ? 'bg-amber-100 text-amber-700' 
+              : 'bg-white text-stone-600 hover:bg-stone-100 border border-stone-200'
             }
           `}
         >
@@ -101,19 +101,19 @@ const SharedMemories = () => {
       {/* Content */}
       {sharedMemories.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
-            <FiUsers className="w-8 h-8 text-gray-400" />
+          <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mb-4">
+            <FiUsers className="w-8 h-8 text-amber-400" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+          <h3 className="text-lg font-medium text-stone-900 mb-2">
             No shared memories yet
           </h3>
-          <p className="text-gray-500 dark:text-gray-400 max-w-md">
+          <p className="text-stone-500 max-w-md">
             When someone shares their memories with you, they'll appear here.
           </p>
         </div>
       ) : filteredMemories.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-gray-500 dark:text-gray-400">
+          <p className="text-stone-500">
             No shared memories found for "{searchQuery}"
           </p>
         </div>

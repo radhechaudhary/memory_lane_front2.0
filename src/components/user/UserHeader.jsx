@@ -1,14 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  FiMenu,
-  FiSearch,
-  FiPlus,
-  FiBell,
-  FiX,
-  FiSettings,
-} from "react-icons/fi";
+import { FiMenu, FiSearch, FiBell, FiX, FiSettings } from "react-icons/fi";
 import { useAuth } from "../../hooks/useAuth";
 
 const UserHeader = ({ onMobileMenuToggle }) => {
@@ -83,23 +76,6 @@ const UserHeader = ({ onMobileMenuToggle }) => {
               <FiSearch className="w-5 h-5 text-stone-600" />
             )}
           </button>
-
-          {/* Add Memory Button */}
-          <Link
-            to="/timeline"
-            className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-400 to-amber-500 text-stone-900 rounded-xl font-semibold text-sm hover:from-amber-500 hover:to-amber-600 transition-all"
-          >
-            <FiPlus className="w-4 h-4" />
-            <span className="hidden lg:inline">Add Memory</span>
-          </Link>
-
-          {/* Mobile Add Button */}
-          <Link
-            to="/timeline"
-            className="sm:hidden p-2 rounded-lg bg-amber-400 text-stone-900"
-          >
-            <FiPlus className="w-5 h-5" />
-          </Link>
 
           {/* Notifications */}
           <button className="relative p-2 rounded-lg hover:bg-stone-100 transition-colors">

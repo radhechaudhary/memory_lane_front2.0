@@ -77,6 +77,7 @@ const Navbar = ({ onAddMemory }) => {
             >
               <FiPlus className="w-4 h-4" />
               Add Memory
+              
             </motion.button>
 
             <div className="hidden items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 sm:flex">

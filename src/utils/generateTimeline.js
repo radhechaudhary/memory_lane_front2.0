@@ -67,17 +67,20 @@ export const filterByDateRange = (memories, range) => {
     switch (range) {
       case 'today':
         return memoryDate >= startOfDay;
-      case 'week':
+      case 'week': {
         const weekAgo = new Date(startOfDay);
         weekAgo.setDate(weekAgo.getDate() - 7);
         return memoryDate >= weekAgo;
-      case 'month':
+      }
+      case 'month': {
         const monthAgo = new Date(startOfDay);
         monthAgo.setMonth(monthAgo.getMonth() - 1);
         return memoryDate >= monthAgo;
-      case 'year':
+      }
+      case 'year': {
         const yearStart = new Date(now.getFullYear(), 0, 1);
         return memoryDate >= yearStart;
+      }
       default:
         return true;
     }

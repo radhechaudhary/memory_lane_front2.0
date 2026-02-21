@@ -10,10 +10,32 @@ import {
   FiHardDrive,
   FiCreditCard,
   FiSun,
+  FiMoon,
+  FiMonitor,
+  FiImage,
+  FiVideo,
+  FiMic,
+  FiSmartphone,
+  FiMapPin,
+  FiCheck,
+  FiCheckCircle,
+  FiCamera,
+  FiLoader,
   FiAlertTriangle,
 } from "react-icons/fi";
 import { useThemeStore } from "../../store/themeStore";
 import AppShell from "../../components/layout/AppShell";
+
+const ToggleSwitch = ({ enabled, onChange }) => (
+  <button
+    onClick={() => onChange(!enabled)}
+    className={`relative h-7 w-12 rounded-full transition-all duration-300 ${enabled ? "bg-amber-400" : "bg-stone-200 dark:bg-gray-600"}`}
+  >
+    <span
+      className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-md transition-transform duration-300 ${enabled ? "left-6" : "left-1"}`}
+    />
+  </button>
+);
 
 export default function SettingsPage() {
   const { setTheme, toggleTheme } = useThemeStore();
@@ -128,17 +150,6 @@ export default function SettingsPage() {
     }
   };
 
-  const Toggle = ({ enabled, onChange }) => (
-    <button
-      onClick={() => onChange(!enabled)}
-      className={`relative h-7 w-12 rounded-full transition-all duration-300 ${enabled ? "bg-amber-400" : "bg-stone-200 dark:bg-gray-600"}`}
-    >
-      <span
-        className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-md transition-transform duration-300 ${enabled ? "left-6" : "left-1"}`}
-      />
-    </button>
-  );
-
   const tabs = [
     { id: "profile", label: "Profile", icon: FiUser },
     { id: "privacy", label: "Privacy & Security", icon: FiShield },
@@ -149,6 +160,63 @@ export default function SettingsPage() {
     { id: "danger", label: "Danger Zone", icon: FiAlertTriangle },
   ];
 
+  const panelClassName = "premium-panel p-5 sm:p-6 lg:p-8";
+
+  const notificationItems = [
+    {
+      key: "milestoneReminders",
+      label: "Milestone reminders",
+      desc: "Get notified about memory milestones",
+    },
+    {
+      key: "onThisDay",
+      label: "On This Day",
+      desc: "Reminders of memories from this day",
+    },
+    {
+      key: "sharedAlbums",
+      label: "Shared album updates",
+      desc: "When someone adds photos",
+    },
+    {
+      key: "emailNotifications",
+      label: "Email notifications",
+      desc: "Receive updates via email",
+    },
+  ];
+
+  const storageItems = [
+    {
+      label: "Photos",
+      value: storageData.photos,
+      icon: FiImage,
+      color: "bg-amber-100 text-amber-600",
+    },
+    {
+      label: "Videos",
+      value: storageData.videos,
+      icon: FiVideo,
+      color: "bg-rose-100 text-rose-600",
+    },
+    {
+      label: "Audio",
+      value: storageData.audio,
+      icon: FiMic,
+      color: "bg-blue-100 text-blue-600",
+    },
+  ];
+
+  const themeOptions = [
+    { id: "light", label: "Light", icon: FiSun },
+    { id: "dark", label: "Dark", icon: FiMoon },
+    { id: "system", label: "System", icon: FiMonitor },
+  ];
+
+  const memoryPrivacyOptions = ["private", "shared", "public"];
+
+  const getSessionIcon = (deviceName) =>
+    deviceName.includes("Mac") ? FiMonitor : FiSmartphone;
+
   return (
     <AppShell
       activeNav="settings"
@@ -157,13 +225,12 @@ export default function SettingsPage() {
       contentClassName="max-w-5xl"
       hideSidebar
     >
-      {/* Back Button */}
       <button
         onClick={() => navigate(-1)}
-        className="mb-6 flex items-center gap-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+        className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)]"
       >
-        <FiArrowLeft className="w-5 h-5" />
-        <span className="text-sm font-medium">Back</span>
+        <FiArrowLeft className="h-4 w-4" />
+        Back
       </button>
 
       <div className="flex flex-col gap-8 md:flex-row">
@@ -180,7 +247,7 @@ export default function SettingsPage() {
                 }`}
               >
                 <tab.icon className="w-5 h-5" />
-                <span className="hidden md:inline">{tab.label}</span>
+                <span className="whitespace-nowrap text-left">{tab.label}</span>
               </button>
             ))}
           </nav>
@@ -188,7 +255,7 @@ export default function SettingsPage() {
 
         <div className="flex-1">
           {activeTab === "profile" && (
-            <div className="premium-panel p-8">
+            <div className={panelClassName}>
               <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">
                 Profile Information
               </h2>
@@ -206,7 +273,7 @@ export default function SettingsPage() {
                       type="button"
                       className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-amber-400 text-stone-900 shadow-lg transition-transform hover:scale-110 hover:bg-amber-300"
                     >
-                      <i className="fas fa-camera text-xs"></i>
+                      <FiCamera className="h-4 w-4" />
                     </button>
                   </div>
                   <div>
@@ -273,7 +340,7 @@ export default function SettingsPage() {
                 >
                   {isSaving ? (
                     <span className="flex items-center gap-2">
-                      <i className="fas fa-circle-notch fa-spin text-xs"></i>
+                      <FiLoader className="h-4 w-4 animate-spin" />
                       Saving...
                     </span>
                   ) : (
@@ -286,7 +353,7 @@ export default function SettingsPage() {
 
           {activeTab === "privacy" && (
             <div className="space-y-6">
-              <div className="premium-panel p-8">
+              <div className={panelClassName}>
                 <h2 className="text-xl font-semibold text-stone-800">
                   Password
                 </h2>
@@ -359,8 +426,8 @@ export default function SettingsPage() {
                 </form>
               </div>
 
-              <div className="premium-panel p-8">
-                <div className="flex items-center justify-between">
+              <div className={panelClassName}>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="text-xl font-semibold text-stone-800">
                       Two-Factor Authentication
@@ -369,7 +436,7 @@ export default function SettingsPage() {
                       Add an extra layer of security
                     </p>
                   </div>
-                  <Toggle
+                  <ToggleSwitch
                     enabled={privacyData.twoFactorEnabled}
                     onChange={(enabled) =>
                       setPrivacyData({
@@ -381,15 +448,15 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="premium-panel p-8">
+              <div className={panelClassName}>
                 <h2 className="text-xl font-semibold text-stone-800">
                   Default Memory Privacy
                 </h2>
                 <p className="mt-1 text-sm text-stone-600">
                   Set default visibility for new memories
                 </p>
-                <div className="mt-6 flex gap-3">
-                  {["private", "shared", "public"].map((option) => (
+                <div className="mt-6 flex flex-wrap gap-3">
+                  {memoryPrivacyOptions.map((option) => (
                     <button
                       key={option}
                       onClick={() =>
@@ -406,8 +473,8 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="premium-panel p-8">
-                <div className="flex items-center justify-between">
+              <div className={panelClassName}>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="text-xl font-semibold text-stone-800">
                       Active Sessions
@@ -427,13 +494,13 @@ export default function SettingsPage() {
                   {privacyData.sessions.map((session) => (
                     <div
                       key={session.id}
-                      className="flex items-center justify-between rounded-xl border border-stone-200 bg-white p-4"
+                      className="flex flex-col gap-3 rounded-xl border border-stone-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
                     >
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-start gap-4">
                         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-stone-100">
-                          <i
-                            className={`fas ${session.device.includes("Mac") ? "fa-laptop" : "fa-mobile-alt"} text-stone-500`}
-                          ></i>
+                          {React.createElement(getSessionIcon(session.device), {
+                            className: "h-5 w-5 text-stone-500",
+                          })}
                         </div>
                         <div>
                           <p className="font-medium text-stone-800">
@@ -445,7 +512,10 @@ export default function SettingsPage() {
                             )}
                           </p>
                           <p className="text-sm text-stone-500">
-                            {session.location}
+                            <span className="inline-flex items-center gap-1">
+                              <FiMapPin className="h-3.5 w-3.5" />
+                              {session.location}
+                            </span>
                           </p>
                         </div>
                       </div>
@@ -457,7 +527,7 @@ export default function SettingsPage() {
           )}
 
           {activeTab === "notifications" && (
-            <div className="premium-panel p-8">
+            <div className={panelClassName}>
               <h2 className="text-xl font-semibold text-stone-800">
                 Notifications
               </h2>
@@ -465,37 +535,16 @@ export default function SettingsPage() {
                 Manage how you want to receive updates
               </p>
               <div className="mt-8 space-y-4">
-                {[
-                  {
-                    key: "milestoneReminders",
-                    label: "Milestone reminders",
-                    desc: "Get notified about memory milestones",
-                  },
-                  {
-                    key: "onThisDay",
-                    label: "On This Day",
-                    desc: "Reminders of memories from this day",
-                  },
-                  {
-                    key: "sharedAlbums",
-                    label: "Shared album updates",
-                    desc: "When someone adds photos",
-                  },
-                  {
-                    key: "emailNotifications",
-                    label: "Email notifications",
-                    desc: "Receive updates via email",
-                  },
-                ].map((item) => (
+                {notificationItems.map((item) => (
                   <div
                     key={item.key}
-                    className="flex items-center justify-between rounded-xl border border-stone-200 bg-white p-5"
+                    className="flex items-center justify-between gap-3 rounded-xl border border-stone-200 bg-white p-5"
                   >
                     <div>
                       <p className="font-medium text-stone-800">{item.label}</p>
                       <p className="text-sm text-stone-500">{item.desc}</p>
                     </div>
-                    <Toggle
+                    <ToggleSwitch
                       enabled={notificationSettings[item.key]}
                       onChange={(enabled) =>
                         setNotificationSettings({
@@ -511,13 +560,13 @@ export default function SettingsPage() {
           )}
 
           {activeTab === "storage" && (
-            <div className="premium-panel p-8">
+            <div className={panelClassName}>
               <h2 className="text-xl font-semibold text-stone-800">Storage</h2>
               <p className="mt-1 text-sm text-stone-600">
                 Manage your storage space
               </p>
               <div className="mt-8">
-                <div className="flex items-center justify-between mb-3">
+                <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                   <span className="text-sm font-medium text-stone-700">
                     Storage Used
                   </span>
@@ -535,26 +584,7 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div className="mt-8 grid gap-4 md:grid-cols-3">
-                {[
-                  {
-                    label: "Photos",
-                    value: storageData.photos,
-                    icon: "fa-images",
-                    color: "bg-amber-100 text-amber-600",
-                  },
-                  {
-                    label: "Videos",
-                    value: storageData.videos,
-                    icon: "fa-video",
-                    color: "bg-rose-100 text-rose-600",
-                  },
-                  {
-                    label: "Audio",
-                    value: storageData.audio,
-                    icon: "fa-microphone",
-                    color: "bg-blue-100 text-blue-600",
-                  },
-                ].map((item) => (
+                {storageItems.map((item) => (
                   <div
                     key={item.label}
                     className="rounded-xl border border-stone-200 bg-white p-5"
@@ -562,7 +592,7 @@ export default function SettingsPage() {
                     <div
                       className={`flex h-12 w-12 items-center justify-center rounded-lg ${item.color} mb-3`}
                     >
-                      <i className={`fas ${item.icon}`}></i>
+                      <item.icon className="h-5 w-5" />
                     </div>
                     <p className="text-2xl font-semibold text-stone-800">
                       {item.value} GB
@@ -578,7 +608,7 @@ export default function SettingsPage() {
           )}
 
           {activeTab === "subscription" && (
-            <div className="premium-panel p-8">
+            <div className={panelClassName}>
               <h2 className="text-xl font-semibold text-stone-800">
                 Subscription
               </h2>
@@ -586,7 +616,7 @@ export default function SettingsPage() {
                 Manage your plan and billing
               </p>
               <div className="mt-8 rounded-2xl border-2 border-amber-300 bg-amber-50 p-6">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <span className="inline-block rounded-full bg-amber-200 px-3 py-1 text-xs font-semibold text-amber-700">
                       Current Plan
@@ -607,7 +637,7 @@ export default function SettingsPage() {
                 <div className="space-y-3">
                   {subscriptionData.features.map((feature, index) => (
                     <div key={index} className="flex items-center gap-3">
-                      <i className="fas fa-check text-amber-500"></i>
+                      <FiCheck className="h-4 w-4 text-amber-500" />
                       <span className="text-stone-700">{feature}</span>
                     </div>
                   ))}
@@ -617,7 +647,7 @@ export default function SettingsPage() {
           )}
 
           {activeTab === "appearance" && (
-            <div className="premium-panel p-8">
+            <div className={panelClassName}>
               <h2 className="text-xl font-semibold text-stone-800">
                 Appearance
               </h2>
@@ -628,12 +658,8 @@ export default function SettingsPage() {
                 <label className="mb-4 block text-sm font-medium text-stone-700">
                   Theme
                 </label>
-                <div className="grid gap-4 md:grid-cols-3">
-                  {[
-                    { id: "light", label: "Light", icon: "fa-sun" },
-                    { id: "dark", label: "Dark", icon: "fa-moon" },
-                    { id: "system", label: "System", icon: "fa-desktop" },
-                  ].map((option) => (
+                <div className="grid gap-4 sm:grid-cols-3">
+                  {themeOptions.map((option) => (
                     <button
                       key={option.id}
                       onClick={() => {
@@ -650,7 +676,7 @@ export default function SettingsPage() {
                       <div
                         className={`flex h-12 w-12 items-center justify-center rounded-lg mx-auto mb-3 ${appearanceData.theme === option.id ? "bg-amber-100 text-amber-600" : "bg-stone-100 text-stone-500"}`}
                       >
-                        <i className={`fas ${option.icon}`}></i>
+                        <option.icon className="h-5 w-5" />
                       </div>
                       <p
                         className={`text-sm font-medium ${appearanceData.theme === option.id ? "text-amber-700" : "text-stone-700"}`}
@@ -665,7 +691,7 @@ export default function SettingsPage() {
           )}
 
           {activeTab === "danger" && (
-            <div className="premium-panel p-8">
+            <div className={panelClassName}>
               <div className="rounded-xl border-2 border-red-300 bg-red-50 p-6">
                 <h2 className="text-xl font-semibold text-red-700">
                   Danger Zone
@@ -674,7 +700,7 @@ export default function SettingsPage() {
                   These actions are irreversible.
                 </p>
                 <div className="mt-6 space-y-4">
-                  <div className="flex items-center justify-between rounded-lg bg-white p-4">
+                  <div className="flex flex-col gap-3 rounded-lg bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="font-medium text-stone-800">
                         Delete Account
@@ -700,7 +726,7 @@ export default function SettingsPage() {
       {showSuccess && (
         <div className="fixed bottom-6 right-6 z-50 animate-dropdown-in rounded-xl bg-green-500 px-6 py-4 shadow-lg">
           <div className="flex items-center gap-3">
-            <i className="fas fa-check-circle text-white"></i>
+            <FiCheckCircle className="h-5 w-5 text-white" />
             <span className="font-medium text-white">{showSuccess}</span>
           </div>
         </div>
@@ -714,7 +740,7 @@ export default function SettingsPage() {
           />
           <div className="relative z-10 w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl animate-slideUp">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100 mx-auto mb-6">
-              <i className="fas fa-exclamation-triangle text-2xl text-red-600"></i>
+              <FiAlertTriangle className="h-8 w-8 text-red-600" />
             </div>
             <h3 className="text-xl font-semibold text-center text-stone-800 mb-2">
               Delete Account

@@ -32,6 +32,12 @@ const Dashboard = () => {
   const [showMemoryForm, setShowMemoryForm] = useState(false);
   const [showReminisce, setShowReminisce] = useState(false);
 
+  useEffect(() => {
+    if (user) {
+      fetchMemories();
+    }
+  }, [user, fetchMemories]);
+
   // Redirect to login if no user
   if (!user) {
     return (
@@ -40,10 +46,6 @@ const Dashboard = () => {
       </div>
     );
   }
-
-  useEffect(() => {
-    fetchMemories();
-  }, [fetchMemories]);
 
   // Get recent memories (last 6)
   const recentMemories = memories.slice(0, 6);

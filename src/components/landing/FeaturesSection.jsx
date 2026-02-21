@@ -105,7 +105,7 @@ export default function FeaturesSection() {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes slideUp {
           from {
             opacity: 0;

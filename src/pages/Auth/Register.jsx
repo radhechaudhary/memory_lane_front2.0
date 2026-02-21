@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { FiMail, FiLock, FiUser, FiShield, FiArrowLeft } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import Toast from "../../components/shared/Toast";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -9,6 +10,7 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
   const [formError, setFormError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const { register, isLoading, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
@@ -29,9 +31,15 @@ const Register = () => {
       setFormError(result.error || "Signup failed.");
       return;
     }
-    navigate(result.user.role === "admin" ? "/admin-dashboard" : "/dashboard", {
-      replace: true,
-    });
+    setSuccessMessage("Account created successfully! Redirecting...");
+    setTimeout(() => {
+      navigate(
+        result.user.role === "admin" ? "/admin-dashboard" : "/dashboard",
+        {
+          replace: true,
+        },
+      );
+    }, 3500);
   };
 
   const handleBackClick = () => {
@@ -40,6 +48,11 @@ const Register = () => {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-stone-50 via-white to-amber-50/30 px-4 py-10">
+      <Toast
+        message={successMessage}
+        type="success"
+        onClose={() => setSuccessMessage("")}
+      />
       <div className="w-full max-w-md">
         {/* Back Button */}
         <button

@@ -9,11 +9,13 @@ import {
 } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import Toast from "../../components/shared/Toast";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [formError, setFormError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const { login, loginDemo, isLoading, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
@@ -34,9 +36,15 @@ const Login = () => {
       setFormError(result.error || "Login failed.");
       return;
     }
-    navigate(result.user.role === "admin" ? "/admin-dashboard" : "/dashboard", {
-      replace: true,
-    });
+    setSuccessMessage("Login successful! Redirecting...");
+    setTimeout(() => {
+      navigate(
+        result.user.role === "admin" ? "/admin-dashboard" : "/dashboard",
+        {
+          replace: true,
+        },
+      );
+    }, 3500);
   };
 
   const handleDemoLogin = async (role) => {
@@ -46,9 +54,15 @@ const Login = () => {
       setFormError(result.error || "Demo login failed.");
       return;
     }
-    navigate(result.user.role === "admin" ? "/admin-dashboard" : "/dashboard", {
-      replace: true,
-    });
+    setSuccessMessage("Demo login successful! Redirecting...");
+    setTimeout(() => {
+      navigate(
+        result.user.role === "admin" ? "/admin-dashboard" : "/dashboard",
+        {
+          replace: true,
+        },
+      );
+    }, 3500);
   };
 
   const handleBackClick = () => {
@@ -57,6 +71,11 @@ const Login = () => {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-stone-50 via-white to-amber-50/30 px-4 py-10">
+      <Toast
+        message={successMessage}
+        type="success"
+        onClose={() => setSuccessMessage("")}
+      />
       <div className="w-full max-w-md">
         {/* Back Button */}
         <button

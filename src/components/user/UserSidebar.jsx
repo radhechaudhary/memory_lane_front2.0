@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -14,6 +15,7 @@ import {
 } from "react-icons/fi";
 import { useAuth } from "../../hooks/useAuth";
 import { useMemory } from "../../context/MemoryContext";
+import Modal from "../shared/Modal";
 
 const UserSidebar = ({
   collapsed = false,
@@ -21,12 +23,22 @@ const UserSidebar = ({
   mobileOpen,
   onMobileClose,
 }) => {
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const location = useLocation();
   const { user, logout } = useAuth();
   const { memories = [] } = useMemory();
   const storageLimit = 100;
   const usedStorage = memories.length;
   const usedPercentage = Math.min((usedStorage / storageLimit) * 100, 100);
+
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const handleConfirmLogout = () => {
+    setShowLogoutConfirm(false);
+    logout();
+  };
 
   const mainLinks = [
     { path: "/dashboard", label: "Dashboard", icon: FiHome },
@@ -229,7 +241,7 @@ const UserSidebar = ({
 
         {/* Logout Button */}
         <button
-          onClick={() => logout()}
+          onClick={handleLogoutClick}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-stone-600 hover:bg-stone-100 hover:text-red-600 transition-colors"
         >
           <FiLogOut className="w-5 h-5 flex-shrink-0" />
@@ -247,6 +259,34 @@ const UserSidebar = ({
           </AnimatePresence>
         </button>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      <Modal
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        title="Confirm Logout"
+        size="sm"
+      >
+        <div className="py-4 text-center">
+          <p className="text-stone-600 mb-6">
+            Are you sure you want to logout?
+          </p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => setShowLogoutConfirm(false)}
+              className="px-4 py-2 rounded-lg border border-stone-200 text-stone-700 hover:bg-stone-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleConfirmLogout}
+              className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Stats Card */}
       <AnimatePresence>

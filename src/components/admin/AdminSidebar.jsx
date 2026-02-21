@@ -1,4 +1,5 @@
 // Admin Sidebar - Premium sidebar with gold accents
+import { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -13,6 +14,7 @@ import {
   FiX,
 } from "react-icons/fi";
 import { useAuth } from "../../hooks/useAuth";
+import Modal from "../shared/Modal";
 
 const navItems = [
   { path: "/admin", label: "Overview", icon: FiGrid },
@@ -23,8 +25,18 @@ const navItems = [
 ];
 
 const AdminSidebar = ({ collapsed, onToggle, mobileOpen, onMobileClose }) => {
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const location = useLocation();
   const { logout } = useAuth();
+
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const handleConfirmLogout = () => {
+    setShowLogoutConfirm(false);
+    logout();
+  };
 
   const isActive = (path) => {
     if (path === "/admin") {
@@ -128,7 +140,7 @@ const AdminSidebar = ({ collapsed, onToggle, mobileOpen, onMobileClose }) => {
 
         {/* Logout Button */}
         <button
-          onClick={() => logout()}
+          onClick={handleLogoutClick}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[var(--color-text-secondary)] hover:bg-red-50 hover:text-red-600 transition-colors"
         >
           <FiLogOut className="w-5 h-5 flex-shrink-0" />
@@ -146,6 +158,34 @@ const AdminSidebar = ({ collapsed, onToggle, mobileOpen, onMobileClose }) => {
           </AnimatePresence>
         </button>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      <Modal
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        title="Confirm Logout"
+        size="sm"
+      >
+        <div className="py-4 text-center">
+          <p className="text-stone-600 mb-6">
+            Are you sure you want to logout?
+          </p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => setShowLogoutConfirm(false)}
+              className="px-4 py-2 rounded-lg border border-stone-200 text-stone-700 hover:bg-stone-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleConfirmLogout}
+              className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Collapse Toggle - Desktop Only */}
       <button

@@ -1,16 +1,22 @@
 import { useEffect, useState } from "react";
 import { FiMail, FiLock, FiUser, FiShield, FiArrowLeft } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { useAuth } from "../../hooks/useAuth";
-import Toast from "../../components/shared/Toast";
+import { mapAuthError } from "../../utils/authErrorMap";
 
 const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
+  const [adminSignupKey, setAdminSignupKey] = useState("");
   const [formError, setFormError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({
+    email: "",
+    password: "",
+    admin_signup_key: "",
+  });
   const { register, isLoading, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
@@ -18,7 +24,7 @@ const Register = () => {
     if (!isAuthenticated || !user?.role) {
       return;
     }
-    navigate(user.role === "admin" ? "/admin-dashboard" : "/dashboard", {
+    navigate(user.role === "admin" ? "/admin" : "/dashboard", {
       replace: true,
     });
   }, [isAuthenticated, user, navigate]);
@@ -26,20 +32,52 @@ const Register = () => {
   const handleRegister = async (event) => {
     event.preventDefault();
     setFormError("");
-    const result = await register(name, email, password, role);
+    setFieldErrors({ email: "", password: "", admin_signup_key: "" });
+    const result = await register(name, email, password, role, adminSignupKey);
     if (!result.success) {
-      setFormError(result.error || "Signup failed.");
+      const config = mapAuthError(result.error);
+      if (config.display === "toast") {
+        // Use the appropriate toast type based on the error
+        if (config.toastType === "warning") {
+          toast.warning(config.userMessage);
+        } else {
+          toast.error(config.userMessage);
+        }
+        return;
+      }
+
+      if (config.field === "general") {
+        setFormError(config.userMessage);
+        return;
+      }
+
+      if (
+        config.field === "email" ||
+        config.field === "password" ||
+        config.field === "admin_signup_key"
+      ) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          [config.field]: config.userMessage,
+        }));
+        return;
+      }
+
+      setFormError(config.userMessage);
       return;
     }
-    setSuccessMessage("Account created successfully! Redirecting...");
+
+    // Show role-specific success toast and redirect
+    if (result.user.role === "admin") {
+      toast.success("Admin account created successfully. Welcome, Admin!");
+    } else {
+      toast.success("Account created successfully!");
+    }
     setTimeout(() => {
-      navigate(
-        result.user.role === "admin" ? "/admin-dashboard" : "/dashboard",
-        {
-          replace: true,
-        },
-      );
-    }, 3500);
+      navigate(result.user.role === "admin" ? "/admin" : "/dashboard", {
+        replace: true,
+      });
+    }, 1500);
   };
 
   const handleBackClick = () => {
@@ -48,11 +86,6 @@ const Register = () => {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-stone-50 via-white to-amber-50/30 px-4 py-10">
-      <Toast
-        message={successMessage}
-        type="success"
-        onClose={() => setSuccessMessage("")}
-      />
       <div className="w-full max-w-md">
         {/* Back Button */}
         <button
@@ -69,7 +102,7 @@ const Register = () => {
             Create Account
           </h1>
           <p className="mt-2 text-sm text-stone-600">
-            Register as Admin or User. Data is stored locally in your browser.
+            Register as Admin or User.
           </p>
 
           {formError ? (
@@ -105,12 +138,19 @@ const Register = () => {
                 <input
                   type="email"
                   value={email}
-                  onChange={(event) => setEmail(event.target.value)}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    setFieldErrors((prev) => ({ ...prev, email: "" }));
+                    setFormError("");
+                  }}
                   placeholder="you@example.com"
                   className="w-full bg-transparent py-3 text-sm text-stone-900 placeholder-stone-400 outline-none"
                   required
                 />
               </div>
+              {fieldErrors.email ? (
+                <p className="mt-2 text-xs text-red-600">{fieldErrors.email}</p>
+              ) : null}
             </label>
 
             <label className="block">
@@ -122,12 +162,21 @@ const Register = () => {
                 <input
                   type="password"
                   value={password}
-                  onChange={(event) => setPassword(event.target.value)}
+                  onChange={(event) => {
+                    setPassword(event.target.value);
+                    setFieldErrors((prev) => ({ ...prev, password: "" }));
+                    setFormError("");
+                  }}
                   placeholder="Create a password"
                   className="w-full bg-transparent py-3 text-sm text-stone-900 placeholder-stone-400 outline-none"
                   required
                 />
               </div>
+              {fieldErrors.password ? (
+                <p className="mt-2 text-xs text-red-600">
+                  {fieldErrors.password}
+                </p>
+              ) : null}
             </label>
 
             <label className="block">
@@ -183,6 +232,37 @@ const Register = () => {
                 </button>
               </div>
             </label>
+
+            {role === "admin" ? (
+              <label className="block">
+                <span className="mb-2 block text-sm font-medium text-stone-700">
+                  Admin Signup Key
+                </span>
+                <div className="flex items-center gap-3 rounded-lg border border-stone-300 bg-white px-4 transition focus-within:border-amber-400 focus-within:ring-1 focus-within:ring-amber-200">
+                  <FiLock className="text-stone-400" />
+                  <input
+                    type="password"
+                    value={adminSignupKey}
+                    onChange={(event) => {
+                      setAdminSignupKey(event.target.value);
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        admin_signup_key: "",
+                      }));
+                      setFormError("");
+                    }}
+                    placeholder="Enter admin signup key"
+                    className="w-full bg-transparent py-3 text-sm text-stone-900 placeholder-stone-400 outline-none"
+                    required
+                  />
+                </div>
+                {fieldErrors.admin_signup_key ? (
+                  <p className="mt-2 text-xs text-red-600">
+                    {fieldErrors.admin_signup_key}
+                  </p>
+                ) : null}
+              </label>
+            ) : null}
 
             <button
               type="submit"

@@ -1,6 +1,14 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiImage, FiMoreVertical, FiEdit2, FiTrash2, FiShare2, FiLock } from 'react-icons/fi';
+import {
+  FiImage,
+  FiMoreVertical,
+  FiEdit2,
+  FiTrash2,
+  FiShare2,
+  FiLock,
+  FiGlobe,
+} from 'react-icons/fi';
 import { useState } from 'react';
 
 const AlbumCard = ({ 
@@ -43,11 +51,19 @@ const AlbumCard = ({
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         {/* Privacy Badge */}
-        {album.isPrivate && (
-          <div className="absolute top-3 left-3 p-1.5 rounded-full bg-white/90 backdrop-blur-sm">
-            <FiLock className="w-3 h-3 text-stone-600" />
-          </div>
-        )}
+        <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1.5 text-xs font-medium text-stone-700 backdrop-blur-sm">
+          {album.isPrivate ? (
+            <>
+              <FiLock className="w-3 h-3" />
+              Private
+            </>
+          ) : (
+            <>
+              <FiGlobe className="w-3 h-3" />
+              Public
+            </>
+          )}
+        </div>
 
         {/* Memory Count */}
         <div className="absolute bottom-3 left-3 px-3 py-1.5 bg-amber-500 rounded-full text-sm font-medium text-white">

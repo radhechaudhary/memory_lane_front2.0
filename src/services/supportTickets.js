@@ -21,15 +21,24 @@ export const getSupportTickets = () => {
     return [];
   }
 
-  return parseTickets(window.localStorage.getItem(SUPPORT_TICKETS_KEY));
+  try {
+    return parseTickets(window.localStorage.getItem(SUPPORT_TICKETS_KEY));
+  } catch {
+    return [];
+  }
 };
 
 export const saveSupportTickets = (tickets) => {
   if (typeof window === "undefined") {
-    return;
+    return false;
   }
 
-  window.localStorage.setItem(SUPPORT_TICKETS_KEY, JSON.stringify(tickets));
+  try {
+    window.localStorage.setItem(SUPPORT_TICKETS_KEY, JSON.stringify(tickets));
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 export const createSupportTicket = (ticketData) => {
@@ -43,7 +52,12 @@ export const createSupportTicket = (ticketData) => {
 
   const tickets = getSupportTickets();
   const updatedTickets = [newTicket, ...tickets];
-  saveSupportTickets(updatedTickets);
+  const isSaved = saveSupportTickets(updatedTickets);
+
+  if (!isSaved) {
+    throw new Error("Unable to save support ticket");
+  }
+
   return newTicket;
 };
 
@@ -56,5 +70,17 @@ export const resolveSupportTicket = (ticketId) => {
   );
 
   saveSupportTickets(updatedTickets);
+  return updatedTickets;
+};
+
+export const deleteSupportTicket = (ticketId) => {
+  const tickets = getSupportTickets();
+  const updatedTickets = tickets.filter((ticket) => ticket.id !== ticketId);
+  const isSaved = saveSupportTickets(updatedTickets);
+
+  if (!isSaved) {
+    throw new Error("Unable to delete support ticket");
+  }
+
   return updatedTickets;
 };

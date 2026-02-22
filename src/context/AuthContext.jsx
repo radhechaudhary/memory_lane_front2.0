@@ -1,52 +1,38 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { STORAGE_KEYS } from '../utils/constants';
+import { createContext, useContext, useEffect, useState } from "react";
+import { authAPI } from "../services/api";
+import { STORAGE_KEYS } from "../utils/constants";
 
 const AuthContext = createContext(null);
 
-const USERS_KEY = 'memona_users';
-const DEMO_USERS = [
-  {
-    id: 'demo-admin',
-    name: 'Demo Admin',
-    username: 'Demo Admin',
-    email: 'admin@demo.memona',
-    password: 'demo-admin',
-    role: 'admin',
-    isDemo: true
-  },
-  {
-    id: 'demo-user',
-    name: 'Demo User',
-    username: 'Demo User',
-    email: 'user@demo.memona',
-    password: 'demo-user',
-    role: 'user',
-    isDemo: true
-  }
-];
+const normalizeRole = (role) => (role || "").toLowerCase();
 
-const normalizeRole = (role) => (role || '').toLowerCase();
-
-const getStoredUsers = () => {
-  try {
-    const raw = localStorage.getItem(USERS_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+const clearAuthStorage = () => {
+  localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+  localStorage.removeItem(STORAGE_KEYS.USER);
 };
 
-const saveUsers = (users) => {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
-};
+const normalizeUser = (user) => {
+  if (!user) return null;
+  const role = normalizeRole(user.role) === "admin" ? "admin" : "user";
+  const displayName =
+    user.full_name || user.name || user.username || user.email;
 
-const buildAllUsers = () => [...DEMO_USERS, ...getStoredUsers()];
+  return {
+    id: user.id,
+    email: user.email,
+    name: displayName,
+    username: displayName,
+    full_name: displayName,
+    bio: user.bio || "",
+    avatar_url: user.avatar_url || "",
+    role,
+  };
+};
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -54,112 +40,156 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const savedUser = localStorage.getItem(STORAGE_KEYS.USER);
-    if (savedUser) {
-      try {
-        const parsedUser = JSON.parse(savedUser);
-        if (['admin', 'user'].includes(parsedUser?.role)) {
-          setUser(parsedUser);
-        } else {
-          localStorage.removeItem(STORAGE_KEYS.USER);
-        }
-      } catch {
-        localStorage.removeItem(STORAGE_KEYS.USER);
+    const bootstrapAuth = async () => {
+      const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+      if (!token) {
+        setLoading(false);
+        return;
       }
-    }
-    setLoading(false);
-  }, []);
 
-  const register = async (name, email, password, role) => {
-    setError('');
-    setLoading(true);
-    const normalizedEmail = email.trim().toLowerCase();
-    const normalizedRole = normalizeRole(role);
+      try {
+        const response = await authAPI.getMe();
+        const userFromApi = normalizeUser(response?.data?.data?.user);
 
-    const allowedRoles = ['admin', 'user'];
-    if (!allowedRoles.includes(normalizedRole)) {
-      setLoading(false);
-      setError('Please choose a valid role.');
-      return { success: false, error: 'Please choose a valid role.' };
-    }
+        if (!userFromApi) {
+          clearAuthStorage();
+          setUser(null);
+          setLoading(false);
+          return;
+        }
 
-    const existingUsers = buildAllUsers();
-    const alreadyExists = existingUsers.some(
-      (candidate) => candidate.email.toLowerCase() === normalizedEmail
-    );
-
-    if (alreadyExists) {
-      setLoading(false);
-      setError('Email already registered.');
-      return { success: false, error: 'Email already registered.' };
-    }
-
-    const newUser = {
-      id: `user-${Date.now()}`,
-      name: name.trim(),
-      username: name.trim(),
-      email: normalizedEmail,
-      password,
-      role: normalizedRole,
-      isDemo: false
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userFromApi));
+        setUser(userFromApi);
+      } catch {
+        clearAuthStorage();
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const storedUsers = getStoredUsers();
-    saveUsers([...storedUsers, newUser]);
+    bootstrapAuth();
+  }, []);
 
-    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(newUser));
-    setUser(newUser);
-    setLoading(false);
-    return { success: true, user: newUser };
+  const register = async (name, email, password, role, adminSignupKey = "") => {
+    setError("");
+    setLoading(true);
+    const normalizedRole = normalizeRole(role);
+
+    const allowedRoles = ["admin", "user"];
+    if (!allowedRoles.includes(normalizedRole)) {
+      setLoading(false);
+      setError("Please choose a valid role.");
+      return { success: false, error: "Please choose a valid role." };
+    }
+
+    try {
+      const response = await authAPI.register({
+        full_name: name,
+        email,
+        password,
+        role: normalizedRole,
+        admin_signup_key: adminSignupKey,
+      });
+
+      const data = response?.data?.data || {};
+      const userFromApi = normalizeUser(data.user);
+
+      if (!userFromApi) {
+        throw new Error("Invalid register response");
+      }
+
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userFromApi));
+      if (data.access_token) {
+        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.access_token);
+      }
+      setUser(userFromApi);
+      return { success: true, user: userFromApi };
+    } catch (err) {
+      clearAuthStorage();
+      setUser(null);
+      const message =
+        err?.response?.data?.message || "Signup failed. Please try again.";
+      setError(message);
+      return { success: false, error: message };
+    } finally {
+      setLoading(false);
+    }
   };
 
   const login = async (email, password) => {
-    setError('');
+    setError("");
     setLoading(true);
-    const normalizedEmail = email.trim().toLowerCase();
 
-    const matchedUser = buildAllUsers().find(
-      (candidate) =>
-        candidate.email.toLowerCase() === normalizedEmail &&
-        candidate.password === password
-    );
+    try {
+      const response = await authAPI.login({ email, password });
+      const data = response?.data?.data || {};
+      const userFromApi = normalizeUser(data.user);
 
-    if (!matchedUser) {
+      if (!data.access_token || !userFromApi) {
+        throw new Error("Invalid login response");
+      }
+
+      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.access_token);
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userFromApi));
+      setUser(userFromApi);
+      return { success: true, user: userFromApi };
+    } catch (err) {
+      clearAuthStorage();
+      setUser(null);
+      const message =
+        err?.response?.data?.message || "Invalid email or password.";
+      setError(message);
+      return { success: false, error: message };
+    } finally {
       setLoading(false);
-      setError('Invalid email or password.');
-      return { success: false, error: 'Invalid email or password.' };
     }
-
-    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(matchedUser));
-    setUser(matchedUser);
-    setLoading(false);
-    return { success: true, user: matchedUser };
   };
 
-  const loginDemo = async (role) => {
-    setError('');
-    setLoading(true);
-    const normalizedRole = normalizeRole(role);
-    const demoUser = DEMO_USERS.find((candidate) => candidate.role === normalizedRole);
-
-    if (!demoUser) {
-      setLoading(false);
-      setError('Demo user not found.');
-      return { success: false, error: 'Demo user not found.' };
-    }
-
-    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(demoUser));
-    setUser(demoUser);
-    setLoading(false);
-    return { success: true, user: demoUser };
-  };
-
-  const logout = () => {
-    localStorage.removeItem(STORAGE_KEYS.USER);
+  const logout = async () => {
+    clearAuthStorage();
     setUser(null);
+  };
+
+  const updateProfile = async (payload) => {
+    setError("");
+
+    try {
+      const response = await authAPI.updateProfile(payload);
+      const userFromApi = normalizeUser(response?.data?.data?.user);
+
+      if (!userFromApi) {
+        throw new Error("Invalid profile response");
+      }
+
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userFromApi));
+      setUser(userFromApi);
+      return { success: true, user: userFromApi };
+    } catch (err) {
+      const message =
+        err?.response?.data?.message ||
+        "Unable to update profile right now. Please try again.";
+      setError(message);
+      return { success: false, error: message };
+    }
+  };
+
+  const changePassword = async (payload) => {
+    setError("");
+
+    try {
+      await authAPI.changePassword(payload);
+      return { success: true };
+    } catch (err) {
+      const message =
+        err?.response?.data?.message ||
+        "Unable to update password right now. Please try again.";
+      setError(message);
+      return { success: false, error: message };
+    }
   };
 
   const value = {
@@ -168,14 +198,14 @@ export const AuthProvider = ({ children }) => {
     isLoading: loading,
     error,
     login,
-    loginDemo,
     register,
     logout,
-    isAuthenticated: !!user
+    updateProfile,
+    changePassword,
+    isAuthenticated: !!user,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export default AuthContext;
-

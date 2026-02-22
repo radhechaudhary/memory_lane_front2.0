@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FiArrowLeft,
@@ -25,6 +25,7 @@ import {
 } from "react-icons/fi";
 import { useThemeStore } from "../../store/themeStore";
 import AppShell from "../../components/layout/AppShell";
+import { useAuth } from "../../hooks/useAuth";
 
 const ToggleSwitch = ({ enabled, onChange }) => (
   <button
@@ -39,17 +40,20 @@ const ToggleSwitch = ({ enabled, onChange }) => (
 
 export default function SettingsPage() {
   const { setTheme, toggleTheme } = useThemeStore();
+  const { user, updateProfile, changePassword } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("profile");
-  const [isSaving, setIsSaving] = useState(false);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [formError, setFormError] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
   const [profileData, setProfileData] = useState({
-    name: "Sarah Mitchell",
-    email: "sarah.mitchell@email.com",
-    bio: "Cherishing every moment",
+    name: "",
+    email: "",
+    bio: "",
   });
 
   const [privacyData, setPrivacyData] = useState({
@@ -109,23 +113,54 @@ export default function SettingsPage() {
     setTimeout(() => setShowSuccess(false), 3000);
   };
 
+  useEffect(() => {
+    setProfileData({
+      name: user?.full_name || user?.name || "",
+      email: user?.email || "",
+      bio: user?.bio || "",
+    });
+  }, [user]);
+
   const handleSaveProfile = async (e) => {
     e.preventDefault();
-    setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSaving(false);
-    showSuccessMessage("Profile updated successfully!");
+    setFormError("");
+    setIsSavingProfile(true);
+
+    const result = await updateProfile({
+      full_name: profileData.name,
+      bio: profileData.bio,
+    });
+
+    setIsSavingProfile(false);
+    if (result?.success) {
+      showSuccessMessage("Profile updated successfully!");
+    } else {
+      setFormError(result?.error || "Failed to update profile");
+    }
   };
 
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
+    setFormError("");
+
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert("Passwords don't match!");
+      setFormError("Passwords don't match");
       return;
     }
-    setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSaving(false);
+
+    setIsSavingPassword(true);
+
+    const result = await changePassword({
+      current_password: passwordData.currentPassword,
+      new_password: passwordData.newPassword,
+    });
+
+    setIsSavingPassword(false);
+    if (!result?.success) {
+      setFormError(result?.error || "Failed to update password");
+      return;
+    }
+
     setPasswordData({
       currentPassword: "",
       newPassword: "",
@@ -264,6 +299,11 @@ export default function SettingsPage() {
               </p>
 
               <form onSubmit={handleSaveProfile} className="mt-8 space-y-6">
+                {formError && (
+                  <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {formError}
+                  </div>
+                )}
                 <div className="flex items-center gap-6">
                   <div className="group relative">
                     <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-amber-200 to-rose-200 text-3xl font-medium text-amber-700 shadow-inner">
@@ -335,10 +375,10 @@ export default function SettingsPage() {
 
                 <button
                   type="submit"
-                  disabled={isSaving}
+                  disabled={isSavingProfile}
                   className="rounded-full bg-amber-400 px-8 py-3 text-sm font-semibold text-stone-900 transition-all hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {isSaving ? (
+                  {isSavingProfile ? (
                     <span className="flex items-center gap-2">
                       <FiLoader className="h-4 w-4 animate-spin" />
                       Saving...
@@ -365,6 +405,11 @@ export default function SettingsPage() {
                   onSubmit={handleUpdatePassword}
                   className="mt-6 space-y-4"
                 >
+                  {formError && (
+                    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                      {formError}
+                    </div>
+                  )}
                   <div>
                     <label className="mb-2 block text-sm font-medium text-stone-700">
                       Current Password
@@ -418,10 +463,10 @@ export default function SettingsPage() {
                   </div>
                   <button
                     type="submit"
-                    disabled={isSaving}
-                    className="rounded-full bg-amber-400 px-8 py-3 text-sm font-semibold text-stone-900 hover:bg-amber-300"
+                    disabled={isSavingPassword}
+                    className="rounded-full bg-amber-400 px-8 py-3 text-sm font-semibold text-stone-900 hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-70"
                   >
-                    {isSaving ? "Updating..." : "Update Password"}
+                    {isSavingPassword ? "Updating..." : "Update Password"}
                   </button>
                 </form>
               </div>

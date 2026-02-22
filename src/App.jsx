@@ -29,6 +29,7 @@ import Dashboard from "./pages/Dashboard";
 import LandingPage from "./pages/LandingPage";
 import Timeline from "./pages/Timeline";
 import Albums from "./pages/Albums";
+import AlbumDetail from "./pages/AlbumDetail";
 import Milestones from "./pages/Milestones";
 import MapView from "./pages/MapView";
 import SharedMemories from "./pages/SharedMemories";
@@ -139,6 +140,16 @@ const AppRoutes = () => (
         }
       />
       <Route
+        path="/albums/:id"
+        element={
+          <UserRoute>
+            <UserLayout>
+              <AlbumDetail />
+            </UserLayout>
+          </UserRoute>
+        }
+      />
+      <Route
         path="/milestones"
         element={
           <UserRoute>
@@ -188,7 +199,7 @@ const AppRoutes = () => (
     </Routes>
 
     <ToastContainer
-      position="bottom-right"
+      position="top-right"
       autoClose={3000}
       hideProgressBar={false}
       newestOnTop

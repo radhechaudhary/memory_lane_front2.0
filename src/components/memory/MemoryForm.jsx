@@ -305,11 +305,13 @@ const MemoryForm = ({
 
             <label className="flex items-center justify-center gap-2 cursor-pointer py-2 text-gray-500 hover:text-gray-700 transition-colors">
               <FiUpload className="w-5 h-5" />
-              <span className="text-sm">Upload photos or videos</span>
+              <span className="text-sm">
+                Upload photos, videos, or audio (multiple at once)
+              </span>
               <input
                 type="file"
                 multiple
-                accept="image/*,video/*"
+                accept="image/*,video/*,audio/*"
                 onChange={handleMediaUpload}
                 className="hidden"
               />

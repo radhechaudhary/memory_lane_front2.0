@@ -13,7 +13,6 @@ import { formatDate } from "../../utils/formatDate";
 
 const ReminisceModal = ({ isOpen, onClose, memories = [] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [direction, setDirection] = useState(0);
 
   // Reset to random memory when opened
   useEffect(() => {
@@ -29,15 +28,25 @@ const ReminisceModal = ({ isOpen, onClose, memories = [] }) => {
     }
   }, [currentIndex, memories.length]);
 
+  useEffect(() => {
+    if (!isOpen || memories.length <= 1) return;
+
+    const autoSlideInterval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % memories.length);
+    }, 5000);
+
+    return () => clearInterval(autoSlideInterval);
+  }, [isOpen, memories.length]);
+
   const currentMemory = memories[currentIndex];
 
   const handleNext = () => {
-    setDirection(1);
+    if (!memories.length) return;
     setCurrentIndex((prev) => (prev + 1) % memories.length);
   };
 
   const handlePrev = () => {
-    setDirection(-1);
+    if (!memories.length) return;
     setCurrentIndex((prev) => (prev - 1 + memories.length) % memories.length);
   };
 
@@ -134,13 +143,13 @@ const ReminisceModal = ({ isOpen, onClose, memories = [] }) => {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-amber-300 to-amber-500 flex items-center justify-center">
+              <div className="w-full h-full bg-linear-to-br from-amber-300 to-amber-500 flex items-center justify-center">
                 <FiStar className="w-16 h-16 text-white" />
               </div>
             )}
 
             {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
 
             {/* Header Content */}
             <div className="absolute bottom-0 left-0 right-0 p-6 text-white">

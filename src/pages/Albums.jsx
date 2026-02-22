@@ -1,27 +1,47 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { FiPlus, FiImage } from 'react-icons/fi';
-import { useMemory } from '../context/MemoryContext';
-import AlbumCard from '../components/album/AlbumCard';
-import AlbumForm from '../components/album/AlbumForm';
-import SearchBar from '../components/shared/SearchBar';
-import Loader from '../components/shared/Loader';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { FiPlus, FiImage } from "react-icons/fi";
+import { useMemory } from "../context/MemoryContext";
+import AlbumCard from "../components/album/AlbumCard";
+import AlbumForm from "../components/album/AlbumForm";
+import SearchBar from "../components/shared/SearchBar";
+import Loader from "../components/shared/Loader";
 
 const Albums = () => {
-  const { albums, loading, fetchAlbums, createAlbum, updateAlbum, deleteAlbum } = useMemory();
+  const {
+    albums,
+    loading,
+    fetchAlbums,
+    createAlbum,
+    updateAlbum,
+    deleteAlbum,
+  } = useMemory();
   const [showAlbumForm, setShowAlbumForm] = useState(false);
   const [editingAlbum, setEditingAlbum] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchAlbums();
   }, [fetchAlbums]);
 
+  const normalizeSearchText = (value) => String(value || "").toLowerCase();
+
   const filteredAlbums = searchQuery
-    ? albums.filter(a => 
-        a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        a.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        a.tags?.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()))
+    ? albums.filter(
+        (a) =>
+          normalizeSearchText(a.name).includes(
+            normalizeSearchText(searchQuery),
+          ) ||
+          normalizeSearchText(a.description).includes(
+            normalizeSearchText(searchQuery),
+          ) ||
+          (Array.isArray(a.tags)
+            ? a.tags.some((t) =>
+                normalizeSearchText(t).includes(
+                  normalizeSearchText(searchQuery),
+                ),
+              )
+            : false),
       )
     : albums;
 
@@ -31,7 +51,7 @@ const Albums = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this album?')) {
+    if (window.confirm("Are you sure you want to delete this album?")) {
       await deleteAlbum(id);
     }
   };
@@ -59,11 +79,10 @@ const Albums = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">
-            Albums
-          </h1>
+          <h1 className="text-2xl font-bold text-stone-900">Albums</h1>
           <p className="text-stone-500">
-            {albums.length} {albums.length === 1 ? 'album' : 'albums'} to organize your memories
+            {albums.length} {albums.length === 1 ? "album" : "albums"} to
+            organize your memories
           </p>
         </div>
 
@@ -101,18 +120,13 @@ const Albums = () => {
           <p className="text-stone-500 max-w-md mb-6">
             Create albums to organize your memories into collections.
           </p>
-          <button
-            onClick={() => setShowAlbumForm(true)}
-            className="btn-gold"
-          >
+          <button onClick={() => setShowAlbumForm(true)} className="btn-gold">
             Create Your First Album
           </button>
         </div>
       ) : searchQuery && filteredAlbums.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-stone-500">
-            No albums found for "{searchQuery}"
-          </p>
+          <p className="text-stone-500">No albums found for "{searchQuery}"</p>
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -142,4 +156,3 @@ const Albums = () => {
 };
 
 export default Albums;
-

@@ -1,6 +1,219 @@
 import { createContext, useContext, useState, useCallback } from "react";
 import { albumsAPI, memoriesAPI, milestonesAPI } from "../services/api";
 
+const normalizeMemory = (memory) => {
+  if (!memory) {
+    return null;
+  }
+
+  const normalizedId = memory._id || memory.id || null;
+  const locationFromLegacy =
+    memory.location ||
+    (memory.location_name || memory.location_lat || memory.location_lng
+      ? {
+          name: memory.location_name || "",
+          coordinates:
+            memory.location_lat !== null && memory.location_lng !== null
+              ? {
+                  lat: Number(memory.location_lat),
+                  lng: Number(memory.location_lng),
+                }
+              : null,
+        }
+      : null);
+
+  let media = memory.media;
+  if (!Array.isArray(media)) {
+    const relation = memory.media_file || memory.media_files || null;
+    const relationItem = Array.isArray(relation) ? relation[0] : relation;
+    const mediaUrl =
+      memory.media_url ||
+      relationItem?.secure_url ||
+      memory.media?.secure_url ||
+      memory.media?.url ||
+      null;
+    if (mediaUrl) {
+      const mediaType =
+        memory.media_type ||
+        relationItem?.resource_type ||
+        memory.media?.resource_type ||
+        memory.media?.type ||
+        "image";
+      media = [{ type: mediaType, url: mediaUrl }];
+    } else {
+      media = [];
+    }
+  }
+
+  return {
+    ...memory,
+    _id: normalizedId,
+    id: normalizedId,
+    date: memory.date || memory.created_at || null,
+    location: locationFromLegacy,
+    media,
+    isMilestone:
+      memory.isMilestone ?? memory.is_milestone ?? memory.is_milestone === true,
+    isPrivate:
+      memory.isPrivate ??
+      (memory.is_public !== undefined ? !memory.is_public : true),
+  };
+};
+
+const normalizeAlbum = (album) => {
+  if (!album) {
+    return null;
+  }
+
+  const normalizedId = album._id || album.id || null;
+  const coverRelation = Array.isArray(album.cover_media)
+    ? album.cover_media[0]
+    : album.cover_media;
+
+  return {
+    ...album,
+    _id: normalizedId,
+    id: normalizedId,
+    name: album.name || album.title || "",
+    coverImage:
+      album.coverImage ||
+      album.cover_image_url ||
+      coverRelation?.secure_url ||
+      null,
+    isPrivate:
+      album.isPrivate ??
+      (album.is_public !== undefined ? !album.is_public : true),
+  };
+};
+
+const normalizeMilestone = (milestone) => {
+  const normalized = normalizeMemory(milestone);
+  if (!normalized) {
+    return null;
+  }
+
+  return {
+    ...normalized,
+    title: normalized.title || normalized.name || "",
+    isCompleted: normalized.isCompleted || false,
+    targetDate: normalized.targetDate || null,
+    targetCount:
+      typeof normalized.targetCount === "number"
+        ? normalized.targetCount
+        : null,
+  };
+};
+
+const isExplicitlySharedMemory = (memory) => {
+  if (!memory || typeof memory !== "object") {
+    return false;
+  }
+
+  const sharedWith =
+    memory.sharedWith || memory.shared_with || memory.shared_users || [];
+
+  if (Array.isArray(sharedWith) && sharedWith.length > 0) {
+    return true;
+  }
+
+  const sharedFlag =
+    memory.is_shared ??
+    memory.isShared ??
+    memory.shared ??
+    memory.is_public_share;
+
+  if (typeof sharedFlag === "boolean") {
+    return sharedFlag;
+  }
+
+  if (typeof sharedFlag === "string") {
+    return sharedFlag.toLowerCase() === "true";
+  }
+
+  return false;
+};
+
+const buildMemoryPayload = (data, file = null) => {
+  const selectedFile =
+    file ||
+    (Array.isArray(data?.media)
+      ? data.media.find((item) => item?.file)?.file
+      : null);
+
+  const basePayload = {
+    title: data.title,
+  };
+
+  if (data.description) {
+    basePayload.description = data.description;
+  }
+
+  if (data.location?.name) {
+    basePayload.location_name = data.location.name;
+  }
+
+  if (data.location?.coordinates?.lat !== undefined) {
+    basePayload.location_lat = data.location.coordinates.lat;
+  }
+
+  if (data.location?.coordinates?.lng !== undefined) {
+    basePayload.location_lng = data.location.coordinates.lng;
+  }
+
+  if (data.isPrivate !== undefined) {
+    basePayload.is_public = data.isPrivate ? "false" : "true";
+  }
+
+  if (data.isMilestone !== undefined) {
+    basePayload.is_milestone = data.isMilestone ? "true" : "false";
+  }
+
+  if (!selectedFile) {
+    return { payload: basePayload, isMultipart: false };
+  }
+
+  const formData = new FormData();
+  Object.entries(basePayload).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      formData.append(key, String(value));
+    }
+  });
+  formData.append("file", selectedFile);
+
+  return { payload: formData, isMultipart: true };
+};
+
+const buildAlbumPayload = (data) => ({
+  title: data.name,
+  description: data.description || "",
+  is_public: data.isPrivate ? "false" : "true",
+});
+
+const buildAlbumRequest = (data) => {
+  const payload = buildAlbumPayload(data);
+  const coverFile = data?.coverFile || null;
+
+  if (!coverFile) {
+    return { payload, isMultipart: false };
+  }
+
+  const formData = new FormData();
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      formData.append(key, String(value));
+    }
+  });
+  formData.append("file", coverFile);
+
+  return { payload: formData, isMultipart: true };
+};
+
+const buildMilestonePayload = (data) => ({
+  title: data.title,
+  description: data.description || "",
+  is_public: data.isPrivate ? "false" : "true",
+});
+
 const MemoryContext = createContext(null);
 
 export const useMemoryContext = () => {
@@ -35,8 +248,12 @@ export const MemoryProvider = ({ children }) => {
       const response = await memoriesAPI.getAll(params);
 
       if (response.data.success) {
-        setMemories(response.data.data.memories);
-        setPagination(response.data.data.pagination);
+        const payload = response.data.data;
+        const list = Array.isArray(payload) ? payload : payload?.memories || [];
+        setMemories(list.map(normalizeMemory).filter(Boolean));
+        if (payload?.pagination) {
+          setPagination(payload.pagination);
+        }
       }
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch memories");
@@ -52,8 +269,11 @@ export const MemoryProvider = ({ children }) => {
       const response = await memoriesAPI.getById(id);
 
       if (response.data.success) {
-        setCurrentMemory(response.data.data.memory);
-        return response.data.data.memory;
+        const memory = normalizeMemory(
+          response.data.data?.memory || response.data.data,
+        );
+        setCurrentMemory(memory);
+        return memory;
       }
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch memory");
@@ -67,12 +287,58 @@ export const MemoryProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await memoriesAPI.create(data);
+      const files = Array.isArray(data?.media)
+        ? data.media
+            .map((item) => item?.file)
+            .filter((item) => item instanceof File)
+        : [];
 
-      if (response.data.success) {
-        setMemories((prev) => [response.data.data.memory, ...prev]);
-        return { success: true, memory: response.data.data.memory };
+      if (files.length <= 1) {
+        const { payload, isMultipart } = buildMemoryPayload(data);
+        const response = isMultipart
+          ? await memoriesAPI.createWithFile(payload)
+          : await memoriesAPI.create(payload);
+
+        if (response.data.success) {
+          const memory = normalizeMemory(
+            response.data.data?.memory || response.data.data,
+          );
+          if (memory) {
+            setMemories((prev) => [memory, ...prev]);
+          }
+          return {
+            success: true,
+            memory,
+            memories: memory ? [memory] : [],
+            count: memory ? 1 : 0,
+          };
+        }
       }
+
+      const createdMemories = [];
+      for (const file of files) {
+        const { payload } = buildMemoryPayload(data, file);
+        const response = await memoriesAPI.createWithFile(payload);
+        if (!response.data?.success) {
+          throw new Error("Failed to create memory");
+        }
+        const memory = normalizeMemory(
+          response.data.data?.memory || response.data.data,
+        );
+        if (memory) {
+          createdMemories.push(memory);
+        }
+      }
+
+      if (createdMemories.length > 0) {
+        setMemories((prev) => [...createdMemories.reverse(), ...prev]);
+      }
+      return {
+        success: true,
+        memory: createdMemories[0] || null,
+        memories: createdMemories,
+        count: createdMemories.length,
+      };
     } catch (err) {
       const message = err.response?.data?.message || "Failed to create memory";
       setError(message);
@@ -89,13 +355,18 @@ export const MemoryProvider = ({ children }) => {
       const response = await memoriesAPI.update(id, data);
 
       if (response.data.success) {
-        setMemories((prev) =>
-          prev.map((m) => (m._id === id ? response.data.data.memory : m)),
+        const updatedMemory = normalizeMemory(
+          response.data.data?.memory || response.data.data,
         );
-        if (currentMemory?._id === id) {
-          setCurrentMemory(response.data.data.memory);
+        if (updatedMemory) {
+          setMemories((prev) =>
+            prev.map((m) => (m._id === id ? updatedMemory : m)),
+          );
+          if (currentMemory?._id === id) {
+            setCurrentMemory(updatedMemory);
+          }
         }
-        return { success: true, memory: response.data.data.memory };
+        return { success: true, memory: updatedMemory };
       }
     } catch (err) {
       const message = err.response?.data?.message || "Failed to update memory";
@@ -130,17 +401,19 @@ export const MemoryProvider = ({ children }) => {
 
   const toggleFavorite = async (id) => {
     try {
-      const response = await memoriesAPI.toggleFavorite(id);
+      const memory = memories.find((item) => item._id === id);
+      const shouldLike = !memory?.isFavorite;
+      const response = shouldLike
+        ? await memoriesAPI.like(id)
+        : await memoriesAPI.unlike(id);
 
       if (response.data.success) {
         setMemories((prev) =>
           prev.map((m) =>
-            m._id === id
-              ? { ...m, isFavorite: response.data.data.isFavorite }
-              : m,
+            m._id === id ? { ...m, isFavorite: response.data.data.liked } : m,
           ),
         );
-        return { success: true, isFavorite: response.data.data.isFavorite };
+        return { success: true, isFavorite: response.data.data.liked };
       }
     } catch (err) {
       return { success: false, error: err.response?.data?.message };
@@ -181,7 +454,10 @@ export const MemoryProvider = ({ children }) => {
       if (response.data?.success) {
         const nextAlbums =
           response.data?.data?.albums || response.data?.data || [];
-        setAlbums(Array.isArray(nextAlbums) ? nextAlbums : []);
+        const normalized = Array.isArray(nextAlbums)
+          ? nextAlbums.map(normalizeAlbum).filter(Boolean)
+          : [];
+        setAlbums(normalized);
       }
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch albums");
@@ -195,9 +471,14 @@ export const MemoryProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await albumsAPI.create(data);
+      const { payload, isMultipart } = buildAlbumRequest(data);
+      const response = isMultipart
+        ? await albumsAPI.createWithFile(payload)
+        : await albumsAPI.create(payload);
       if (response.data?.success) {
-        const album = response.data?.data?.album || response.data?.data;
+        const album = normalizeAlbum(
+          response.data?.data?.album || response.data?.data,
+        );
         if (album) {
           setAlbums((prev) => [album, ...prev]);
         }
@@ -216,9 +497,14 @@ export const MemoryProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await albumsAPI.update(id, data);
+      const { payload, isMultipart } = buildAlbumRequest(data);
+      const response = isMultipart
+        ? await albumsAPI.updateWithFile(id, payload)
+        : await albumsAPI.update(id, payload);
       if (response.data?.success) {
-        const updatedAlbum = response.data?.data?.album || response.data?.data;
+        const updatedAlbum = normalizeAlbum(
+          response.data?.data?.album || response.data?.data,
+        );
         if (updatedAlbum) {
           setAlbums((prev) =>
             prev.map((a) => (a._id === id ? updatedAlbum : a)),
@@ -261,7 +547,10 @@ export const MemoryProvider = ({ children }) => {
       if (response.data?.success) {
         const nextMilestones =
           response.data?.data?.milestones || response.data?.data || [];
-        setMilestones(Array.isArray(nextMilestones) ? nextMilestones : []);
+        const normalized = Array.isArray(nextMilestones)
+          ? nextMilestones.map(normalizeMilestone).filter(Boolean)
+          : [];
+        setMilestones(normalized);
       }
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch milestones");
@@ -275,9 +564,11 @@ export const MemoryProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await milestonesAPI.create(data);
+      const response = await milestonesAPI.create(buildMilestonePayload(data));
       if (response.data?.success) {
-        const milestone = response.data?.data?.milestone || response.data?.data;
+        const milestone = normalizeMilestone(
+          response.data?.data?.milestone || response.data?.data,
+        );
         if (milestone) {
           setMilestones((prev) => [milestone, ...prev]);
         }
@@ -297,10 +588,14 @@ export const MemoryProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await milestonesAPI.update(id, data);
+      const response = await milestonesAPI.update(
+        id,
+        buildMilestonePayload(data),
+      );
       if (response.data?.success) {
-        const updatedMilestone =
-          response.data?.data?.milestone || response.data?.data;
+        const updatedMilestone = normalizeMilestone(
+          response.data?.data?.milestone || response.data?.data,
+        );
         if (updatedMilestone) {
           setMilestones((prev) =>
             prev.map((m) => (m._id === id ? updatedMilestone : m)),
@@ -345,7 +640,13 @@ export const MemoryProvider = ({ children }) => {
       if (response.data?.success) {
         const nextShared =
           response.data?.data?.memories || response.data?.data || [];
-        setSharedMemories(Array.isArray(nextShared) ? nextShared : []);
+        const normalizedShared = Array.isArray(nextShared)
+          ? nextShared.map(normalizeMemory).filter(Boolean)
+          : [];
+
+        setSharedMemories(
+          normalizedShared.filter((memory) => isExplicitlySharedMemory(memory)),
+        );
       }
     } catch (err) {
       setError(

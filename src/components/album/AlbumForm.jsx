@@ -1,82 +1,86 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { FiX, FiImage, FiUpload, FiTag, FiLock, FiGlobe } from 'react-icons/fi';
-import Modal from '../shared/Modal';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { FiX, FiImage, FiUpload, FiTag, FiLock, FiGlobe } from "react-icons/fi";
+import Modal from "../shared/Modal";
 
-const AlbumForm = ({ 
-  isOpen, 
-  onClose, 
-  onSubmit, 
-  album = null, 
-  loading = false 
+const AlbumForm = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  album = null,
+  loading = false,
 }) => {
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
+    name: "",
+    description: "",
     tags: [],
     isPrivate: true,
-    coverImage: null
+    coverImage: null,
+    coverFile: null,
   });
-  
-  const [tagInput, setTagInput] = useState('');
+
+  const [tagInput, setTagInput] = useState("");
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (album) {
       setFormData({
-        name: album.name || '',
-        description: album.description || '',
+        name: album.name || "",
+        description: album.description || "",
         tags: album.tags || [],
         isPrivate: album.isPrivate !== undefined ? album.isPrivate : true,
-        coverImage: album.coverImage || null
+        coverImage: album.coverImage || null,
+        coverFile: null,
       });
     } else {
       setFormData({
-        name: '',
-        description: '',
+        name: "",
+        description: "",
         tags: [],
         isPrivate: true,
-        coverImage: null
+        coverImage: null,
+        coverFile: null,
       });
     }
-    setTagInput('');
+    setTagInput("");
     setErrors({});
   }, [album, isOpen]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: null }));
+      setErrors((prev) => ({ ...prev, [name]: null }));
     }
   };
 
   const handleAddTag = (e) => {
-    if (e.key === 'Enter' && tagInput.trim()) {
+    if (e.key === "Enter" && tagInput.trim()) {
       e.preventDefault();
       if (!formData.tags.includes(tagInput.trim())) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          tags: [...prev.tags, tagInput.trim()]
+          tags: [...prev.tags, tagInput.trim()],
         }));
       }
-      setTagInput('');
+      setTagInput("");
     }
   };
 
   const handleRemoveTag = (tag) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      tags: prev.tags.filter(t => t !== tag)
+      tags: prev.tags.filter((t) => t !== tag),
     }));
   };
 
   const handleCoverUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        coverImage: URL.createObjectURL(file)
+        coverImage: URL.createObjectURL(file),
+        coverFile: file,
       }));
     }
   };
@@ -84,7 +88,7 @@ const AlbumForm = ({
   const validate = () => {
     const newErrors = {};
     if (!formData.name.trim()) {
-      newErrors.name = 'Album name is required';
+      newErrors.name = "Album name is required";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -101,7 +105,7 @@ const AlbumForm = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={album ? 'Edit Album' : 'Create Album'}
+      title={album ? "Edit Album" : "Create Album"}
       size="md"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -112,8 +116,8 @@ const AlbumForm = ({
           </label>
           <div className="relative aspect-video rounded-xl overflow-hidden border-2 border-dashed border-gray-300 dark:border-gray-600">
             {formData.coverImage ? (
-              <img 
-                src={formData.coverImage} 
+              <img
+                src={formData.coverImage}
                 alt="Cover"
                 className="w-full h-full object-cover"
               />
@@ -151,7 +155,7 @@ const AlbumForm = ({
               text-gray-900 dark:text-white
               focus:ring-2 focus:ring-indigo-500/20 
               focus:border-indigo-500 outline-none transition-all
-              ${errors.name ? 'border-red-500' : 'border-transparent'}
+              ${errors.name ? "border-red-500" : "border-transparent"}
             `}
             placeholder="Enter album name"
           />
@@ -216,12 +220,15 @@ const AlbumForm = ({
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => setFormData(prev => ({ ...prev, isPrivate: true }))}
+            onClick={() =>
+              setFormData((prev) => ({ ...prev, isPrivate: true }))
+            }
             className={`
               flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all
-              ${formData.isPrivate 
-                ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400' 
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+              ${
+                formData.isPrivate
+                  ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
               }
             `}
           >
@@ -230,12 +237,15 @@ const AlbumForm = ({
           </button>
           <button
             type="button"
-            onClick={() => setFormData(prev => ({ ...prev, isPrivate: false }))}
+            onClick={() =>
+              setFormData((prev) => ({ ...prev, isPrivate: false }))
+            }
             className={`
               flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all
-              ${!formData.isPrivate 
-                ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400' 
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+              ${
+                !formData.isPrivate
+                  ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
               }
             `}
           >
@@ -260,7 +270,7 @@ const AlbumForm = ({
             whileTap={{ scale: 0.98 }}
             className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Saving...' : album ? 'Update Album' : 'Create Album'}
+            {loading ? "Saving..." : album ? "Update Album" : "Create Album"}
           </motion.button>
         </div>
       </form>
@@ -269,4 +279,3 @@ const AlbumForm = ({
 };
 
 export default AlbumForm;
-

@@ -18,7 +18,7 @@ export default function LandingFooter() {
               Your Story In Minutes
             </p>
             <div className="mt-8 flex items-center gap-3 text-sm text-white/60">
-              <span>Made with</span>
+              <span>Made by Arti with</span>
               <FiHeart className="h-5 w-5 text-red-400" />
               <span>for memory-makers everywhere</span>
             </div>

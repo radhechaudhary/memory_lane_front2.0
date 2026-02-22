@@ -1,15 +1,131 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiMenu, FiSearch, FiBell, FiX, FiSettings } from "react-icons/fi";
+import {
+  FiMenu,
+  FiSearch,
+  FiBell,
+  FiX,
+  FiSettings,
+  FiPlus,
+} from "react-icons/fi";
 import { useAuth } from "../../hooks/useAuth";
+import { memoriesAPI } from "../../services/api";
+import { formatDate } from "../../utils/formatDate";
+
+const NOTIFICATION_LAST_SEEN_KEY = "memona.notifications.lastSeenAt";
+
+const isSharedMemory = (memory) => {
+  if (!memory || typeof memory !== "object") {
+    return false;
+  }
+
+  const sharedWith =
+    memory.sharedWith || memory.shared_with || memory.shared_users || [];
+  if (Array.isArray(sharedWith) && sharedWith.length > 0) {
+    return true;
+  }
+
+  const sharedFlag =
+    memory.is_shared ??
+    memory.isShared ??
+    memory.shared ??
+    memory.is_public_share;
+
+  if (typeof sharedFlag === "boolean") {
+    return sharedFlag;
+  }
+
+  if (typeof sharedFlag === "string") {
+    return sharedFlag.toLowerCase() === "true";
+  }
+
+  return false;
+};
 
 const UserHeader = ({ onMobileMenuToggle }) => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notificationItems, setNotificationItems] = useState([]);
+  const [lastSeenAt, setLastSeenAt] = useState(() => {
+    return localStorage.getItem(NOTIFICATION_LAST_SEEN_KEY) || null;
+  });
   const { user } = useAuth();
   const location = useLocation();
+  const profileRef = useRef(null);
+  const notificationRef = useRef(null);
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await memoriesAPI.getAll({ shared: true });
+      const payload = response?.data?.data;
+      const list = Array.isArray(payload) ? payload : payload?.memories || [];
+
+      const nextItems = list
+        .filter(isSharedMemory)
+        .map((memory) => {
+          const createdAt = memory.created_at || memory.date || null;
+          const memoryId = memory._id || memory.id;
+          return {
+            id: String(memoryId || Math.random()),
+            title: memory.title || "Memory shared with you",
+            createdAt,
+            href: memoryId ? `/memory/${memoryId}` : "/shared",
+          };
+        })
+        .sort((a, b) => {
+          const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return bDate - aDate;
+        });
+
+      setNotificationItems(nextItems);
+    } catch {
+      setNotificationItems([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+
+    const intervalId = setInterval(() => {
+      fetchNotifications();
+    }, 30000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setProfileOpen(false);
+      }
+
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target)
+      ) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const unreadCount = notificationItems.filter((item) => {
+    if (!item.createdAt) {
+      return false;
+    }
+
+    if (!lastSeenAt) {
+      return true;
+    }
+
+    return new Date(item.createdAt).getTime() > new Date(lastSeenAt).getTime();
+  }).length;
 
   const getPageTitle = () => {
     switch (location.pathname) {
@@ -65,6 +181,14 @@ const UserHeader = ({ onMobileMenuToggle }) => {
             </div>
           </div>
 
+          <Link
+            to="/timeline"
+            className="hidden md:inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500 text-stone-900 text-sm font-semibold hover:bg-amber-600 transition-colors"
+          >
+            <FiPlus className="w-4 h-4" />
+            Memories
+          </Link>
+
           {/* Mobile Search Toggle */}
           <button
             onClick={() => setSearchOpen(!searchOpen)}
@@ -77,14 +201,92 @@ const UserHeader = ({ onMobileMenuToggle }) => {
             )}
           </button>
 
+          <Link
+            to="/timeline"
+            className="md:hidden inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-500 text-stone-900 text-sm font-semibold hover:bg-amber-600 transition-colors"
+            aria-label=" Memories"
+          >
+            <FiPlus className="w-4 h-4" />
+            Memories
+          </Link>
+
           {/* Notifications */}
-          <button className="relative p-2 rounded-lg hover:bg-stone-100 transition-colors">
-            <FiBell className="w-5 h-5 text-stone-600" />
-            <span className="notification-badge">3</span>
-          </button>
+          <div className="relative" ref={notificationRef}>
+            <button
+              onClick={() => {
+                const nextOpen = !showNotifications;
+                setShowNotifications(nextOpen);
+
+                if (nextOpen) {
+                  const nowIso = new Date().toISOString();
+                  setLastSeenAt(nowIso);
+                  localStorage.setItem(NOTIFICATION_LAST_SEEN_KEY, nowIso);
+                }
+              }}
+              className="relative p-2 rounded-lg hover:bg-stone-100 transition-colors"
+            >
+              <FiBell className="w-5 h-5 text-stone-600" />
+              {unreadCount > 0 ? (
+                <span className="notification-badge">{unreadCount}</span>
+              ) : null}
+            </button>
+
+            <AnimatePresence>
+              {showNotifications && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute right-0 mt-2 w-80 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg"
+                >
+                  <div className="border-b border-stone-200 px-4 py-3">
+                    <h3 className="text-sm font-semibold text-stone-900">
+                      Notifications
+                    </h3>
+                  </div>
+
+                  {notificationItems.length === 0 ? (
+                    <div className="px-4 py-6 text-center text-sm text-stone-500">
+                      No new notifications.
+                    </div>
+                  ) : (
+                    <div className="max-h-80 overflow-y-auto">
+                      {notificationItems.slice(0, 8).map((item) => (
+                        <Link
+                          key={item.id}
+                          to={item.href}
+                          onClick={() => setShowNotifications(false)}
+                          className="block border-b border-stone-100 px-4 py-3 hover:bg-stone-50"
+                        >
+                          <p className="text-sm font-medium text-stone-900">
+                            {item.title}
+                          </p>
+                          <p className="mt-1 text-xs text-stone-500">
+                            {item.createdAt
+                              ? formatDate(item.createdAt, "relative")
+                              : "Recently"}
+                          </p>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="px-4 py-3">
+                    <Link
+                      to="/shared"
+                      onClick={() => setShowNotifications(false)}
+                      className="block w-full rounded-lg bg-amber-50 px-3 py-2 text-center text-sm font-medium text-amber-700 hover:bg-amber-100"
+                    >
+                      View Shared Memories
+                    </Link>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Profile Menu */}
-          <div className="relative">
+          <div className="relative" ref={profileRef}>
             <button
               onClick={() => setProfileOpen(!profileOpen)}
               className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-stone-100 transition-colors"

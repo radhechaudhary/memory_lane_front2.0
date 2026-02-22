@@ -9,7 +9,7 @@ const LoadingScreen = () => (
 
 const getHomePathForRole = (role) => {
   if (role === "admin") {
-    return "/admin-dashboard";
+    return "/admin";
   }
   if (role === "user") {
     return "/dashboard";

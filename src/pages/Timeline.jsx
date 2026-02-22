@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { FiPlus, FiGrid, FiList, FiCalendar } from "react-icons/fi";
 import { toast } from "react-toastify";
 import { useMemory } from "../context/MemoryContext";
+import { useLocation, useNavigate } from "react-router-dom";
 import MemoryCard from "../components/memory/MemoryCard";
 import MemoryForm from "../components/memory/MemoryForm";
 import TimelineItem from "../components/user/TimelineItem";
@@ -13,8 +14,10 @@ import Loader from "../components/shared/Loader";
 const Timeline = () => {
   const {
     memories,
+    albums,
     loading,
     fetchMemories,
+    fetchAlbums,
     createMemory,
     deleteMemory,
     toggleFavorite,
@@ -25,25 +28,99 @@ const Timeline = () => {
   const [showMemoryForm, setShowMemoryForm] = useState(false);
   const [editingMemory, setEditingMemory] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchMemories();
-  }, [fetchMemories]);
+    fetchAlbums();
+  }, [fetchMemories, fetchAlbums]);
+
+  const getMemoryAlbumId = (memory) => {
+    return (
+      memory?.album_id ||
+      memory?.albumId ||
+      memory?.album?.id ||
+      memory?.album?._id ||
+      null
+    );
+  };
+
+  const getAlbumIdFromDescription = (memory) => {
+    const description = String(memory?.description || "").trim();
+    const match = description.match(/uploaded from album\s+(.+?)(?:$|[.!?])/i);
+    if (!match?.[1]) {
+      return null;
+    }
+
+    const normalizeText = (value) =>
+      String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .replace(/["'`]/g, "");
+
+    const albumName = normalizeText(match[1]);
+    const matchedAlbum = albums.find((album) => {
+      const name = normalizeText(album?.name || album?.title || "");
+      return (
+        Boolean(name) &&
+        (name === albumName ||
+          name.includes(albumName) ||
+          albumName.includes(name))
+      );
+    });
+
+    return matchedAlbum?._id || matchedAlbum?.id || null;
+  };
+
+  const mapMemoryWithAlbumId = (memory) => {
+    const mappedAlbumId =
+      getMemoryAlbumId(memory) || getAlbumIdFromDescription(memory);
+    if (!mappedAlbumId) {
+      return memory;
+    }
+
+    return {
+      ...memory,
+      album_id: memory.album_id || mappedAlbumId,
+      albumId: memory.albumId || mappedAlbumId,
+    };
+  };
+
+  const memoriesWithAlbum = memories.map(mapMemoryWithAlbumId);
+
+  useEffect(() => {
+    if (location.state?.openMemoryForm) {
+      setEditingMemory(null);
+      setShowMemoryForm(true);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   // Generate timeline data
-  const timelineData = generateTimeline(memories);
+  const timelineData = generateTimeline(memoriesWithAlbum);
 
   // Filter memories by search
+  const normalizeSearchText = (value) => String(value || "").toLowerCase();
   const filteredMemories = searchQuery
-    ? memories.filter(
+    ? memoriesWithAlbum.filter(
         (m) =>
-          m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          m.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          m.tags?.some((t) =>
-            t.toLowerCase().includes(searchQuery.toLowerCase()),
-          ),
+          normalizeSearchText(m.title).includes(
+            normalizeSearchText(searchQuery),
+          ) ||
+          normalizeSearchText(m.description).includes(
+            normalizeSearchText(searchQuery),
+          ) ||
+          (Array.isArray(m.tags)
+            ? m.tags.some((t) =>
+                normalizeSearchText(t).includes(
+                  normalizeSearchText(searchQuery),
+                ),
+              )
+            : false),
       )
-    : memories;
+    : memoriesWithAlbum;
 
   const handleEdit = (memory) => {
     setEditingMemory(memory);
@@ -108,8 +185,7 @@ const Timeline = () => {
         <div>
           <h1 className="text-2xl font-bold text-stone-900">Timeline</h1>
           <p className="text-stone-500">
-            {memories.length} {memories.length === 1 ? "memory" : "memories"} in
-            your journey
+            {memories.length} {memories.length === 1 ? "memory" : "memories"}
           </p>
         </div>
 
@@ -259,7 +335,11 @@ const Timeline = () => {
           } else {
             result = await createMemory(data);
             if (result?.success) {
-              toast.success("Memory created successfully!");
+              if ((result?.count || 0) > 1) {
+                toast.success(`${result.count} memories created successfully!`);
+              } else {
+                toast.success("Memory created successfully!");
+              }
             } else {
               toast.error(result?.error || "Failed to create memory");
               return;

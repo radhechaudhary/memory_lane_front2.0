@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -26,10 +26,21 @@ const UserSidebar = ({
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const location = useLocation();
   const { user, logout } = useAuth();
-  const { memories = [] } = useMemory();
+  const { memories = [], fetchMemories } = useMemory();
   const storageLimit = 100;
   const usedStorage = memories.length;
   const usedPercentage = Math.min((usedStorage / storageLimit) * 100, 100);
+  const totalStorageGb = 15;
+  const remainingStorageGb = Math.max(
+    0,
+    totalStorageGb - (usedStorage / storageLimit) * totalStorageGb,
+  );
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchMemories();
+    }
+  }, [user?.id, fetchMemories]);
 
   const handleLogoutClick = () => {
     setShowLogoutConfirm(true);
@@ -309,7 +320,7 @@ const UserSidebar = ({
                 />
               </div>
               <p className="text-xs opacity-90 mt-2">
-                {storageLimit - usedStorage} memories remaining
+                {remainingStorageGb.toFixed(1)}GB remaining
               </p>
             </div>
           </motion.div>

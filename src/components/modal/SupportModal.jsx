@@ -1,8 +1,13 @@
 import React, { useState } from "react";
+import { FiCheck, FiLoader, FiX } from "react-icons/fi";
 import { useAuth } from "../../hooks/useAuth";
 import { createSupportTicket } from "../../services/supportTickets";
 
-export default function SupportModal({ isOpen = false, onClose = () => {} }) {
+export default function SupportModal({
+  isOpen = false,
+  onClose = () => {},
+  onSuccess = () => {},
+}) {
   const { user } = useAuth();
   const [formData, setFormData] = useState({
     subject: "",
@@ -11,33 +16,42 @@ export default function SupportModal({ isOpen = false, onClose = () => {} }) {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError("");
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    createSupportTicket({
-      subject: formData.subject,
-      category: formData.category,
-      message: formData.message,
-      userId: user?.id || null,
-      userName: user?.name || user?.username || "Unknown User",
-      userEmail: user?.email || "N/A",
-    });
+      const createdTicket = createSupportTicket({
+        subject: formData.subject,
+        category: formData.category,
+        message: formData.message,
+        userId: user?.id || null,
+        userName: user?.name || user?.username || "Unknown User",
+        userEmail: user?.email || "N/A",
+      });
 
-    setIsSubmitting(false);
-    setSubmitted(true);
+      setSubmitted(true);
+      onSuccess(createdTicket);
 
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({ subject: "", category: "general", message: "" });
-      onClose();
-    }, 2000);
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormData({ subject: "", category: "general", message: "" });
+        onClose();
+      }, 2000);
+    } catch {
+      setSubmitError(
+        "Unable to send your message right now. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const categories = [
@@ -67,14 +81,14 @@ export default function SupportModal({ isOpen = false, onClose = () => {} }) {
             onClick={onClose}
             className="rounded-full p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-600"
           >
-            <i className="fas fa-times"></i>
+            <FiX className="h-5 w-5" />
           </button>
         </div>
 
         {submitted ? (
           <div className="text-center py-8">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 mx-auto mb-4">
-              <i className="fas fa-check text-2xl text-green-600"></i>
+              <FiCheck className="h-8 w-8 text-green-600" />
             </div>
             <h3 className="text-lg font-medium text-stone-800 mb-2">
               Thank you!
@@ -85,6 +99,11 @@ export default function SupportModal({ isOpen = false, onClose = () => {} }) {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
+            {submitError && (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {submitError}
+              </div>
+            )}
             <div>
               <label className="mb-2 block text-sm font-medium text-stone-700">
                 Category
@@ -143,7 +162,7 @@ export default function SupportModal({ isOpen = false, onClose = () => {} }) {
             >
               {isSubmitting ? (
                 <span className="flex items-center justify-center gap-2">
-                  <i className="fas fa-circle-notch fa-spin text-xs"></i>
+                  <FiLoader className="h-4 w-4 animate-spin" />
                   Sending...
                 </span>
               ) : (

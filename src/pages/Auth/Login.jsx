@@ -1,29 +1,26 @@
 import { useEffect, useState } from "react";
-import {
-  FiLogIn,
-  FiMail,
-  FiLock,
-  FiShield,
-  FiUser,
-  FiArrowLeft,
-} from "react-icons/fi";
+import { FiLogIn, FiMail, FiLock, FiArrowLeft } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { useAuth } from "../../hooks/useAuth";
-import Toast from "../../components/shared/Toast";
+import { mapAuthError } from "../../utils/authErrorMap";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [formError, setFormError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const { login, loginDemo, isLoading, isAuthenticated, user } = useAuth();
+  const [fieldErrors, setFieldErrors] = useState({
+    email: "",
+    password: "",
+  });
+  const { login, isLoading, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!isAuthenticated || !user?.role) {
       return;
     }
-    navigate(user.role === "admin" ? "/admin-dashboard" : "/dashboard", {
+    navigate(user.role === "admin" ? "/admin" : "/dashboard", {
       replace: true,
     });
   }, [isAuthenticated, user, navigate]);
@@ -31,38 +28,48 @@ const Login = () => {
   const handleLogin = async (event) => {
     event.preventDefault();
     setFormError("");
+    setFieldErrors({ email: "", password: "" });
     const result = await login(email, password);
     if (!result.success) {
-      setFormError(result.error || "Login failed.");
-      return;
-    }
-    setSuccessMessage("Login successful! Redirecting...");
-    setTimeout(() => {
-      navigate(
-        result.user.role === "admin" ? "/admin-dashboard" : "/dashboard",
-        {
-          replace: true,
-        },
-      );
-    }, 3500);
-  };
+      const config = mapAuthError(result.error);
+      if (config.display === "toast") {
+        // Use the appropriate toast type based on the error
+        if (config.toastType === "warning") {
+          toast.warning(config.userMessage);
+        } else {
+          toast.error(config.userMessage);
+        }
+        return;
+      }
 
-  const handleDemoLogin = async (role) => {
-    setFormError("");
-    const result = await loginDemo(role);
-    if (!result.success) {
-      setFormError(result.error || "Demo login failed.");
+      if (config.field === "general") {
+        setFormError(config.userMessage);
+        return;
+      }
+
+      if (config.field === "email" || config.field === "password") {
+        setFieldErrors((prev) => ({
+          ...prev,
+          [config.field]: config.userMessage,
+        }));
+        return;
+      }
+
+      setFormError(config.userMessage);
       return;
     }
-    setSuccessMessage("Demo login successful! Redirecting...");
+
+    // Show role-specific success toast and redirect
+    if (result.user.role === "admin") {
+      toast.success("Admin login successful. Welcome back!");
+    } else {
+      toast.success("Successfully logged in!");
+    }
     setTimeout(() => {
-      navigate(
-        result.user.role === "admin" ? "/admin-dashboard" : "/dashboard",
-        {
-          replace: true,
-        },
-      );
-    }, 3500);
+      navigate(result.user.role === "admin" ? "/admin" : "/dashboard", {
+        replace: true,
+      });
+    }, 1500);
   };
 
   const handleBackClick = () => {
@@ -71,21 +78,8 @@ const Login = () => {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-stone-50 via-white to-amber-50/30 px-4 py-10">
-      <Toast
-        message={successMessage}
-        type="success"
-        onClose={() => setSuccessMessage("")}
-      />
       <div className="w-full max-w-md">
         {/* Back Button */}
-        <button
-          onClick={handleBackClick}
-          className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-stone-600 transition hover:text-stone-900"
-          aria-label="Go back to landing page"
-        >
-          <FiArrowLeft className="h-5 w-5" />
-          Back to Memona
-        </button>
 
         <div className="rounded-3xl border border-stone-200/60 bg-white p-8 shadow-xl">
           <h1 className="text-3xl font-semibold text-stone-900">
@@ -111,12 +105,19 @@ const Login = () => {
                 <input
                   type="email"
                   value={email}
-                  onChange={(event) => setEmail(event.target.value)}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    setFieldErrors((prev) => ({ ...prev, email: "" }));
+                    setFormError("");
+                  }}
                   placeholder="you@example.com"
                   className="w-full bg-transparent py-3 text-sm text-stone-900 placeholder-stone-400 outline-none"
                   required
                 />
               </div>
+              {fieldErrors.email ? (
+                <p className="mt-2 text-xs text-red-600">{fieldErrors.email}</p>
+              ) : null}
             </label>
 
             <label className="block">
@@ -128,12 +129,21 @@ const Login = () => {
                 <input
                   type="password"
                   value={password}
-                  onChange={(event) => setPassword(event.target.value)}
+                  onChange={(event) => {
+                    setPassword(event.target.value);
+                    setFieldErrors((prev) => ({ ...prev, password: "" }));
+                    setFormError("");
+                  }}
                   placeholder="Enter your password"
                   className="w-full bg-transparent py-3 text-sm text-stone-900 placeholder-stone-400 outline-none"
                   required
                 />
               </div>
+              {fieldErrors.password ? (
+                <p className="mt-2 text-xs text-red-600">
+                  {fieldErrors.password}
+                </p>
+              ) : null}
             </label>
 
             <button
@@ -145,33 +155,6 @@ const Login = () => {
               {isLoading ? "Signing in..." : "Login"}
             </button>
           </form>
-
-          <div className="my-6 flex items-center gap-3">
-            <div className="flex-1 h-px bg-stone-200" />
-            <span className="text-xs font-medium text-stone-500 uppercase">
-              Or
-            </span>
-            <div className="flex-1 h-px bg-stone-200" />
-          </div>
-
-          <div className="space-y-3">
-            <button
-              type="button"
-              onClick={() => handleDemoLogin("admin")}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-amber-200 bg-amber-50 py-3 text-sm font-medium text-amber-900 transition hover:bg-amber-100"
-            >
-              <FiShield />
-              Demo Admin
-            </button>
-            <button
-              type="button"
-              onClick={() => handleDemoLogin("user")}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-stone-300 bg-white py-3 text-sm font-medium text-stone-800 transition hover:bg-stone-50"
-            >
-              <FiUser />
-              Demo User
-            </button>
-          </div>
 
           <p className="mt-6 text-center text-sm text-stone-600">
             Don't have an account?{" "}

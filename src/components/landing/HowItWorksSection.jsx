@@ -17,7 +17,7 @@ const howItWorks = [
   {
     step: "Relive",
     description:
-      "Use the Remiisce feature and AI-generated memory videos to experience your past in new ways.",
+      "Use the Reminisce feature and AI-generated memory videos to experience your past in new ways.",
     icon: FiPlayCircle,
   },
 ];

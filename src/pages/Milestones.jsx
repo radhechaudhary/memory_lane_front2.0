@@ -1,35 +1,49 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { FiPlus, FiStar, FiTarget, FiCheck } from 'react-icons/fi';
-import { useMemory } from '../context/MemoryContext';
-import MemoryMilestone from '../components/memory/MemoryMilestone';
-import Modal from '../components/shared/Modal';
-import SearchBar from '../components/shared/SearchBar';
-import { formatDateForInput } from '../utils/formatDate';
-import Loader from '../components/shared/Loader';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { FiPlus, FiStar, FiTarget, FiCheck } from "react-icons/fi";
+import { useMemory } from "../context/MemoryContext";
+import MemoryMilestone from "../components/memory/MemoryMilestone";
+import Modal from "../components/shared/Modal";
+import SearchBar from "../components/shared/SearchBar";
+import { formatDateForInput } from "../utils/formatDate";
+import Loader from "../components/shared/Loader";
 
 const Milestones = () => {
-  const { milestones, loading, fetchMilestones, createMilestone, updateMilestone, deleteMilestone } = useMemory();
+  const {
+    milestones,
+    loading,
+    fetchMilestones,
+    createMilestone,
+    updateMilestone,
+    deleteMilestone,
+  } = useMemory();
   const [showForm, setShowForm] = useState(false);
   const [editingMilestone, setEditingMilestone] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
+    title: "",
+    description: "",
     date: formatDateForInput(new Date()),
-    targetDate: '',
+    targetDate: "",
     targetCount: 10,
-    isPrivate: false
+    isPrivate: false,
   });
 
   useEffect(() => {
     fetchMilestones();
   }, [fetchMilestones]);
 
+  const normalizeSearchText = (value) => String(value || "").toLowerCase();
+
   const filteredMilestones = searchQuery
-    ? milestones.filter(m => 
-        m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    ? milestones.filter(
+        (m) =>
+          normalizeSearchText(m.title).includes(
+            normalizeSearchText(searchQuery),
+          ) ||
+          normalizeSearchText(m.description).includes(
+            normalizeSearchText(searchQuery),
+          ),
       )
     : milestones;
 
@@ -37,17 +51,19 @@ const Milestones = () => {
     setEditingMilestone(milestone);
     setFormData({
       title: milestone.title,
-      description: milestone.description || '',
+      description: milestone.description || "",
       date: formatDateForInput(milestone.date),
-      targetDate: milestone.targetDate ? formatDateForInput(milestone.targetDate) : '',
+      targetDate: milestone.targetDate
+        ? formatDateForInput(milestone.targetDate)
+        : "",
       targetCount: milestone.targetCount || 10,
-      isPrivate: milestone.isPrivate || false
+      isPrivate: milestone.isPrivate || false,
     });
     setShowForm(true);
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this milestone?')) {
+    if (window.confirm("Are you sure you want to delete this milestone?")) {
       await deleteMilestone(id);
     }
   };
@@ -62,12 +78,12 @@ const Milestones = () => {
     setShowForm(false);
     setEditingMilestone(null);
     setFormData({
-      title: '',
-      description: '',
+      title: "",
+      description: "",
       date: formatDateForInput(new Date()),
-      targetDate: '',
+      targetDate: "",
       targetCount: 10,
-      isPrivate: false
+      isPrivate: false,
     });
   };
 
@@ -84,9 +100,7 @@ const Milestones = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">
-            Milestones
-          </h1>
+          <h1 className="text-2xl font-bold text-stone-900">Milestones</h1>
           <p className="text-stone-500">
             Track your achievements and special moments
           </p>
@@ -122,12 +136,14 @@ const Milestones = () => {
               <FiStar className="w-5 h-5 text-amber-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-stone-900">{milestones.length}</p>
+              <p className="text-2xl font-bold text-stone-900">
+                {milestones.length}
+              </p>
               <p className="text-sm text-stone-500">Total</p>
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-2xl p-4 border border-stone-100">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
@@ -135,7 +151,7 @@ const Milestones = () => {
             </div>
             <div>
               <p className="text-2xl font-bold text-stone-900">
-                {milestones.filter(m => m.isCompleted).length}
+                {milestones.filter((m) => m.isCompleted).length}
               </p>
               <p className="text-sm text-stone-500">Completed</p>
             </div>
@@ -155,10 +171,7 @@ const Milestones = () => {
           <p className="text-stone-500 max-w-md mb-6">
             Create milestones to track your achievements and special moments.
           </p>
-          <button
-            onClick={() => setShowForm(true)}
-            className="btn-gold"
-          >
+          <button onClick={() => setShowForm(true)} className="btn-gold">
             Create Your First Milestone
           </button>
         </div>
@@ -187,7 +200,7 @@ const Milestones = () => {
           setShowForm(false);
           setEditingMilestone(null);
         }}
-        title={editingMilestone ? 'Edit Milestone' : 'Create Milestone'}
+        title={editingMilestone ? "Edit Milestone" : "Create Milestone"}
         size="md"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -198,7 +211,9 @@ const Milestones = () => {
             <input
               type="text"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
               required
               className="w-full px-4 py-2.5 rounded-xl border-2 border-transparent bg-stone-50 text-stone-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all"
               placeholder="Milestone title"
@@ -211,7 +226,9 @@ const Milestones = () => {
             </label>
             <textarea
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               rows={3}
               className="w-full px-4 py-2.5 rounded-xl border-2 border-transparent bg-stone-50 text-stone-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all resize-none"
               placeholder="Describe this milestone..."
@@ -226,7 +243,9 @@ const Milestones = () => {
               <input
                 type="date"
                 value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, date: e.target.value })
+                }
                 className="w-full px-4 py-2.5 rounded-xl border-2 border-transparent bg-stone-50 text-stone-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all"
               />
             </div>
@@ -237,7 +256,9 @@ const Milestones = () => {
               <input
                 type="date"
                 value={formData.targetDate}
-                onChange={(e) => setFormData({ ...formData, targetDate: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, targetDate: e.target.value })
+                }
                 className="w-full px-4 py-2.5 rounded-xl border-2 border-transparent bg-stone-50 text-stone-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all"
               />
             </div>
@@ -251,7 +272,12 @@ const Milestones = () => {
               type="number"
               min="1"
               value={formData.targetCount}
-              onChange={(e) => setFormData({ ...formData, targetCount: parseInt(e.target.value) })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  targetCount: parseInt(e.target.value),
+                })
+              }
               className="w-full px-4 py-2.5 rounded-xl border-2 border-transparent bg-stone-50 text-stone-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all"
             />
           </div>
@@ -273,7 +299,7 @@ const Milestones = () => {
               whileTap={{ scale: 0.98 }}
               className="px-6 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 text-stone-900 rounded-xl font-semibold transition-colors"
             >
-              {editingMilestone ? 'Update' : 'Create'} Milestone
+              {editingMilestone ? "Update" : "Create"} Milestone
             </motion.button>
           </div>
         </form>
@@ -283,4 +309,3 @@ const Milestones = () => {
 };
 
 export default Milestones;
-

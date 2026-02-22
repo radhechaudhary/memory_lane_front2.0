@@ -1,19 +1,19 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { FiMapPin, FiNavigation, FiX } from 'react-icons/fi';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { FiMapPin, FiNavigation, FiX } from "react-icons/fi";
 
-const MemoryMap = ({ 
-  memories = [], 
+const MemoryMap = ({
+  memories = [],
   onMarkerClick,
-  center = { lat: 40.7128, lng: -74.0060 },
+  center = { lat: 40.7128, lng: -74.006 },
   zoom = 4,
-  height = '400px'
+  height = "400px",
 }) => {
   const [selectedMemory, setSelectedMemory] = useState(null);
 
   // Filter memories with location data
-  const memoriesWithLocation = memories.filter(m => m.location?.coordinates);
+  const memoriesWithLocation = memories.filter((m) => m.location?.coordinates);
 
   const handleMarkerClick = (memory) => {
     setSelectedMemory(memory);
@@ -22,26 +22,29 @@ const MemoryMap = ({
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric',
-      year: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
   return (
-    <div className="relative rounded-2xl overflow-hidden bg-stone-100" style={{ height }}>
-      {/* Map Placeholder - In production, integrate with Mapbox or Google Maps */}
+    <div
+      className="relative rounded-2xl overflow-hidden bg-stone-100"
+      style={{ height }}
+    >
+      {/* Map Placeholder - In production, integrate with a map provider */}
       <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-stone-200">
         {/* Grid Pattern */}
-        <div 
+        <div
           className="absolute inset-0 opacity-10"
           style={{
             backgroundImage: `
               linear-gradient(to right, currentColor 1px, transparent 1px),
               linear-gradient(to bottom, currentColor 1px, transparent 1px)
             `,
-            backgroundSize: '40px 40px'
+            backgroundSize: "40px 40px",
           }}
         />
 
@@ -56,10 +59,16 @@ const MemoryMap = ({
           // Calculate position based on coordinates (simplified)
           const latRange = 20;
           const lngRange = 40;
-          const defaultCenter = { lat: 40.7128, lng: -74.0060 };
-          
-          const x = 50 + ((memory.location.coordinates.lng - defaultCenter.lng) / lngRange) * 50;
-          const y = 50 - ((memory.location.coordinates.lat - defaultCenter.lat) / latRange) * 50;
+          const defaultCenter = { lat: 40.7128, lng: -74.006 };
+
+          const x =
+            50 +
+            ((memory.location.coordinates.lng - defaultCenter.lng) / lngRange) *
+              50;
+          const y =
+            50 -
+            ((memory.location.coordinates.lat - defaultCenter.lat) / latRange) *
+              50;
 
           return (
             <motion.button
@@ -72,14 +81,20 @@ const MemoryMap = ({
                 absolute transform -translate-x-1/2 -translate-y-1/2
                 w-10 h-10 rounded-full flex items-center justify-center
                 transition-all duration-200 hover:scale-110 z-10
-                ${selectedMemory?._id === memory._id 
-                  ? 'bg-amber-500 ring-4 ring-amber-300' 
-                  : 'bg-white shadow-lg hover:bg-amber-50'
+                ${
+                  selectedMemory?._id === memory._id
+                    ? "bg-amber-500 ring-4 ring-amber-300"
+                    : "bg-white shadow-lg hover:bg-amber-50"
                 }
               `}
-              style={{ left: `${Math.min(90, Math.max(10, x))}%`, top: `${Math.min(90, Math.max(10, y))}%` }}
+              style={{
+                left: `${Math.min(90, Math.max(10, x))}%`,
+                top: `${Math.min(90, Math.max(10, y))}%`,
+              }}
             >
-              <FiMapPin className={`w-5 h-5 ${selectedMemory?._id === memory._id ? 'text-white' : 'text-amber-600'}`} />
+              <FiMapPin
+                className={`w-5 h-5 ${selectedMemory?._id === memory._id ? "text-white" : "text-amber-600"}`}
+              />
             </motion.button>
           );
         })}
@@ -87,7 +102,8 @@ const MemoryMap = ({
 
       {/* Legend */}
       <div className="absolute bottom-4 left-4 px-3 py-2 bg-white/90 backdrop-blur-sm rounded-lg text-xs text-stone-600">
-        {memoriesWithLocation.length} {memoriesWithLocation.length === 1 ? 'location' : 'locations'}
+        {memoriesWithLocation.length}{" "}
+        {memoriesWithLocation.length === 1 ? "location" : "locations"}
       </div>
 
       {/* Map Controls */}
@@ -112,7 +128,7 @@ const MemoryMap = ({
             <FiX className="w-4 h-4 text-stone-500" />
           </button>
 
-          {selectedMemory.media?.[0]?.type === 'image' && (
+          {selectedMemory.media?.[0]?.type === "image" && (
             <img
               src={selectedMemory.media[0].url}
               alt={selectedMemory.title}
@@ -157,4 +173,3 @@ const MemoryMap = ({
 };
 
 export default MemoryMap;
-

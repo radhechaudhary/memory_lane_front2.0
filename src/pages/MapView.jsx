@@ -1,29 +1,35 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { FiMapPin, FiList } from 'react-icons/fi';
-import { useMemory } from '../context/MemoryContext';
-import MemoryMap from '../components/map/MemoryMap';
-import MemoryCard from '../components/memory/MemoryCard';
-import SearchBar from '../components/shared/SearchBar';
-import Loader from '../components/shared/Loader';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { FiMapPin, FiList } from "react-icons/fi";
+import { useMemory } from "../context/MemoryContext";
+import MemoryMap from "../components/map/MemoryMap";
+import MemoryCard from "../components/memory/MemoryCard";
+import SearchBar from "../components/shared/SearchBar";
+import Loader from "../components/shared/Loader";
 
 const MapView = () => {
   const { memories, loading, fetchMemories, toggleFavorite } = useMemory();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedMemory, setSelectedMemory] = useState(null);
-  const [viewMode, setViewMode] = useState('map'); // 'map', 'list'
+  const [viewMode, setViewMode] = useState("map"); // 'map', 'list'
 
   useEffect(() => {
     fetchMemories();
   }, [fetchMemories]);
 
   // Filter memories with location
-  const memoriesWithLocation = memories.filter(m => m.location?.coordinates);
-  
+  const memoriesWithLocation = memories.filter((m) => m.location?.coordinates);
+  const normalizeSearchText = (value) => String(value || "").toLowerCase();
+
   const filteredMemories = searchQuery
-    ? memoriesWithLocation.filter(m => 
-        m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.location?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    ? memoriesWithLocation.filter(
+        (m) =>
+          normalizeSearchText(m.title).includes(
+            normalizeSearchText(searchQuery),
+          ) ||
+          normalizeSearchText(m.location?.name).includes(
+            normalizeSearchText(searchQuery),
+          ),
       )
     : memoriesWithLocation;
 
@@ -44,11 +50,11 @@ const MapView = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">
-            Memory Map
-          </h1>
+          <h1 className="text-2xl font-bold text-stone-900">Memory Map</h1>
           <p className="text-stone-500">
-            {memoriesWithLocation.length} {memoriesWithLocation.length === 1 ? 'location' : 'locations'} across your memories
+            {memoriesWithLocation.length}{" "}
+            {memoriesWithLocation.length === 1 ? "location" : "locations"}{" "}
+            across your memories
           </p>
         </div>
 
@@ -62,21 +68,21 @@ const MapView = () => {
           {/* View Toggle */}
           <div className="flex bg-stone-100 rounded-xl p-1">
             <button
-              onClick={() => setViewMode('map')}
+              onClick={() => setViewMode("map")}
               className={`p-2 rounded-lg transition-all ${
-                viewMode === 'map' 
-                  ? 'bg-white text-amber-600 shadow-sm' 
-                  : 'text-stone-500 hover:text-stone-700'
+                viewMode === "map"
+                  ? "bg-white text-amber-600 shadow-sm"
+                  : "text-stone-500 hover:text-stone-700"
               }`}
             >
               <FiMapPin className="w-5 h-5" />
             </button>
             <button
-              onClick={() => setViewMode('list')}
+              onClick={() => setViewMode("list")}
               className={`p-2 rounded-lg transition-all ${
-                viewMode === 'list' 
-                  ? 'bg-white text-amber-600 shadow-sm' 
-                  : 'text-stone-500 hover:text-stone-700'
+                viewMode === "list"
+                  ? "bg-white text-amber-600 shadow-sm"
+                  : "text-stone-500 hover:text-stone-700"
               }`}
             >
               <FiList className="w-5 h-5" />
@@ -98,7 +104,7 @@ const MapView = () => {
             Add locations to your memories to see them on the map.
           </p>
         </div>
-      ) : viewMode === 'map' ? (
+      ) : viewMode === "map" ? (
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Map */}
           <div className="lg:col-span-2">
@@ -122,9 +128,10 @@ const MapView = () => {
                   animate={{ opacity: 1, x: 0 }}
                   className={`
                     p-3 rounded-xl cursor-pointer transition-all
-                    ${selectedMemory?._id === memory._id 
-                      ? 'bg-amber-50 ring-2 ring-amber-500' 
-                      : 'bg-white hover:bg-stone-50 border border-stone-100'
+                    ${
+                      selectedMemory?._id === memory._id
+                        ? "bg-amber-50 ring-2 ring-amber-500"
+                        : "bg-white hover:bg-stone-50 border border-stone-100"
                     }
                   `}
                   onClick={() => setSelectedMemory(memory)}
@@ -156,4 +163,3 @@ const MapView = () => {
 };
 
 export default MapView;
-

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { FiCheckCircle, FiClock, FiHeadphones, FiUser } from "react-icons/fi";
 import {
@@ -9,6 +9,28 @@ import { formatDate } from "../../utils/formatDate";
 
 const AdminSupport = () => {
   const [tickets, setTickets] = useState(getSupportTickets);
+
+  useEffect(() => {
+    const refreshTickets = () => {
+      setTickets(getSupportTickets());
+    };
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        refreshTickets();
+      }
+    };
+
+    window.addEventListener("storage", refreshTickets);
+    window.addEventListener("focus", refreshTickets);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("storage", refreshTickets);
+      window.removeEventListener("focus", refreshTickets);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   const stats = useMemo(() => {
     const total = tickets.length;

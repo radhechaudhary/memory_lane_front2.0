@@ -24,9 +24,13 @@ const Dashboard = () => {
     memories = [],
     albums = [],
     milestones = [],
+    sharedMemories = [],
     loading,
     fetchMemories,
+    fetchAlbums,
+    fetchSharedMemories,
     createMemory,
+    deleteMemory,
     toggleFavorite,
   } = useMemory();
   const [showMemoryForm, setShowMemoryForm] = useState(false);
@@ -35,8 +39,22 @@ const Dashboard = () => {
   useEffect(() => {
     if (user) {
       fetchMemories();
+      fetchAlbums();
+      fetchSharedMemories();
     }
-  }, [user, fetchMemories]);
+  }, [user, fetchMemories, fetchAlbums, fetchSharedMemories]);
+
+  useEffect(() => {
+    if (!user) {
+      return undefined;
+    }
+
+    const intervalId = setInterval(() => {
+      fetchSharedMemories();
+    }, 30000);
+
+    return () => clearInterval(intervalId);
+  }, [user, fetchSharedMemories]);
 
   // Redirect to login if no user
   if (!user) {
@@ -55,6 +73,87 @@ const Dashboard = () => {
 
   // Get memories with location
   const memoriesWithLocation = memories.filter((m) => m.location?.coordinates);
+
+  const getMemoryAlbumId = (memory) => {
+    return (
+      memory?.album_id ||
+      memory?.albumId ||
+      memory?.album?.id ||
+      memory?.album?._id ||
+      null
+    );
+  };
+
+  const getAlbumIdFromDescription = (memory) => {
+    const description = String(memory?.description || "").trim();
+    const match = description.match(/uploaded from album\s+(.+?)(?:$|[.!?])/i);
+    if (!match?.[1]) {
+      return null;
+    }
+
+    const normalizeText = (value) =>
+      String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .replace(/["'`]/g, "");
+
+    const albumName = normalizeText(match[1]);
+    const matchedAlbum = albums.find((album) => {
+      const name = normalizeText(album?.name || album?.title || "");
+      return (
+        Boolean(name) &&
+        (name === albumName ||
+          name.includes(albumName) ||
+          albumName.includes(name))
+      );
+    });
+
+    return matchedAlbum?._id || matchedAlbum?.id || null;
+  };
+
+  const getMemoryRedirectPath = (memory) => {
+    const directAlbumId = getMemoryAlbumId(memory);
+    if (directAlbumId) {
+      return `/albums/${directAlbumId}`;
+    }
+
+    const mappedAlbumId = getAlbumIdFromDescription(memory);
+    if (mappedAlbumId) {
+      return `/albums/${mappedAlbumId}`;
+    }
+
+    return `/memory/${memory?._id || memory?.id}`;
+  };
+
+  const mapMemoryWithAlbumId = (memory) => {
+    const mappedAlbumId =
+      getMemoryAlbumId(memory) || getAlbumIdFromDescription(memory);
+    if (!mappedAlbumId) {
+      return memory;
+    }
+
+    return {
+      ...memory,
+      album_id: memory.album_id || mappedAlbumId,
+      albumId: memory.albumId || mappedAlbumId,
+    };
+  };
+
+  const recentMemoriesWithAlbum = recentMemories.map(mapMemoryWithAlbumId);
+
+  const handleDeleteMemory = async (id) => {
+    if (!window.confirm("Delete this memory?")) {
+      return;
+    }
+
+    const result = await deleteMemory(id);
+    if (result?.success) {
+      toast.success("Memory deleted successfully!");
+    } else {
+      toast.error(result?.error || "Failed to delete memory");
+    }
+  };
 
   const stats = [
     {
@@ -177,12 +276,13 @@ const Dashboard = () => {
           </div>
 
           {recentMemories.length > 0 ? (
-            <div className="grid md:grid-cols-2 gap-4">
-              {recentMemories.map((memory) => (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {recentMemoriesWithAlbum.map((memory) => (
                 <MemoryCard
                   key={memory._id}
                   memory={memory}
                   onToggleFavorite={toggleFavorite}
+                  onDelete={handleDeleteMemory}
                 />
               ))}
             </div>
@@ -224,6 +324,27 @@ const Dashboard = () => {
             <MemoryMap memories={memoriesWithLocation} height="200px" />
           </div>
 
+          {/* Quick Stats */}
+          <div className="bg-gradient-to-br from-amber-400 to-amber-500 rounded-2xl p-5 text-white">
+            <div className="flex items-center gap-2 mb-3">
+              <FiSun className="w-5 h-5" />
+              <h3 className="font-semibold">This Month</h3>
+            </div>
+            <p className="text-4xl font-bold">
+              {
+                memories.filter((m) => {
+                  const memoryDate = new Date(m.date);
+                  const now = new Date();
+                  return (
+                    memoryDate.getMonth() === now.getMonth() &&
+                    memoryDate.getFullYear() === now.getFullYear()
+                  );
+                }).length
+              }
+            </p>
+            <p className="text-white/80 text-sm mt-1">new memories created</p>
+          </div>
+
           {/* Favorites */}
           <div className="bg-white rounded-2xl p-5 border border-stone-100">
             <div className="flex items-center gap-2 mb-4">
@@ -235,7 +356,7 @@ const Dashboard = () => {
                 {favoriteMemories.slice(0, 3).map((memory) => (
                   <Link
                     key={memory._id}
-                    to={`/memory/${memory._id}`}
+                    to={getMemoryRedirectPath(memory)}
                     className="flex items-center gap-3 p-2 rounded-lg hover:bg-amber-50 transition-colors"
                   >
                     {memory.media?.[0]?.type === "image" ? (
@@ -267,26 +388,52 @@ const Dashboard = () => {
             )}
           </div>
 
-          {/* Quick Stats */}
-          <div className="bg-gradient-to-br from-amber-400 to-amber-500 rounded-2xl p-5 text-white">
-            <div className="flex items-center gap-2 mb-3">
-              <FiSun className="w-5 h-5" />
-              <h3 className="font-semibold">This Month</h3>
+          {sharedMemories.length > 0 ? (
+            <div className="bg-white rounded-2xl p-5 border border-stone-100">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="font-semibold text-stone-900">
+                  Shared Memories
+                </h3>
+                <Link
+                  to="/shared"
+                  className="text-xs font-semibold text-amber-600 hover:underline"
+                >
+                  View all
+                </Link>
+              </div>
+
+              <div className="space-y-3">
+                {sharedMemories.slice(0, 3).map((memory) => (
+                  <Link
+                    key={memory._id || memory.id}
+                    to={getMemoryRedirectPath(memory)}
+                    className="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-amber-50"
+                  >
+                    {memory.media?.[0]?.type === "image" ? (
+                      <img
+                        src={memory.media[0].url}
+                        alt={memory.title}
+                        className="h-12 w-12 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-amber-100">
+                        <FiImage className="h-5 w-5 text-amber-500" />
+                      </div>
+                    )}
+
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-stone-900">
+                        {memory.title || "Untitled"}
+                      </p>
+                      <p className="text-xs text-stone-500">
+                        {memory.media?.length || 0} media
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
-            <p className="text-4xl font-bold">
-              {
-                memories.filter((m) => {
-                  const memoryDate = new Date(m.date);
-                  const now = new Date();
-                  return (
-                    memoryDate.getMonth() === now.getMonth() &&
-                    memoryDate.getFullYear() === now.getFullYear()
-                  );
-                }).length
-              }
-            </p>
-            <p className="text-white/80 text-sm mt-1">new memories created</p>
-          </div>
+          ) : null}
         </motion.div>
       </div>
 
@@ -297,7 +444,11 @@ const Dashboard = () => {
         onSubmit={async (data) => {
           const result = await createMemory(data);
           if (result?.success) {
-            toast.success("Memory created successfully!");
+            if ((result?.count || 0) > 1) {
+              toast.success(`${result.count} memories created successfully!`);
+            } else {
+              toast.success("Memory created successfully!");
+            }
             setShowMemoryForm(false);
           } else {
             toast.error(result?.error || "Failed to create memory");

@@ -141,6 +141,8 @@ const UserHeader = ({ onMobileMenuToggle }) => {
         return "Milestones";
       case "/map":
         return "Memory Map";
+      case "/search":
+        return "Search Memories";
       case "/shared":
         return "Shared Memories";
       case "/settings":

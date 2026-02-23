@@ -1,7 +1,12 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { FiStar, FiCalendar, FiChevronRight } from "react-icons/fi";
+import { FiStar, FiCalendar, FiChevronRight, FiBell } from "react-icons/fi";
 import { formatDate } from "../../utils/formatDate";
+import {
+  MILESTONE_TYPE_ICONS,
+  MILESTONE_COLORS,
+} from "../../utils/milestoneUtils";
+import { daysUntilMilestone, isUpcoming } from "../../utils/notificationUtils";
 
 const MemoryMilestone = ({
   milestone,
@@ -9,6 +14,11 @@ const MemoryMilestone = ({
   variant = "default", // 'default', 'compact', 'featured'
 }) => {
   const memoriesCount = milestone.memories?.length || 0;
+  const typeIcon = MILESTONE_TYPE_ICONS[milestone.type] || "🎯";
+  const colorGradient =
+    MILESTONE_COLORS[milestone.type] || "from-indigo-500 to-purple-600";
+  const daysLeft = milestone.date ? daysUntilMilestone(milestone.date) : null;
+  const isUpcomingSoon = milestone.date && isUpcoming(milestone.date);
 
   return (
     <motion.div
@@ -38,48 +48,85 @@ const MemoryMilestone = ({
           </div>
         )}
 
+        {/* Type Badge with Upcoming Indicator */}
+        {(milestone.type || isUpcomingSoon) && (
+          <div
+            className={`h-12 bg-gradient-to-r ${colorGradient} relative overflow-hidden`}
+          >
+            <div className="absolute inset-0 opacity-10 mix-blend-multiply">
+              <div className="absolute inset-0 bg-white/10"></div>
+            </div>
+            <div className="h-full flex items-center justify-between px-4">
+              <span className="text-lg">{typeIcon}</span>
+              {isUpcomingSoon && daysLeft !== null && (
+                <div className="flex items-center gap-1 bg-white/95 px-2 py-1 rounded-lg text-xs font-bold text-stone-900">
+                  <FiBell className="w-3 h-3" />
+                  {daysLeft === 0 ? "Today!" : `${daysLeft}d`}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="p-4">
           {/* Header */}
           <div className="flex items-start gap-3 mb-3">
             <div
               className={`
-              w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0
+              w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${colorGradient}
               ${variant === "featured" ? "w-16 h-16" : ""}
-              ${
-                milestone.isCompleted
-                  ? "bg-gradient-to-br from-amber-400 to-orange-500"
-                  : "bg-gradient-to-br from-indigo-500 to-purple-600"
-              }
             `}
             >
-              <FiStar
-                className={`text-white ${variant === "featured" ? "w-8 h-8" : "w-6 h-6"}`}
-              />
+              <span
+                className={`${variant === "featured" ? "text-3xl" : "text-2xl"}`}
+              >
+                {typeIcon}
+              </span>
             </div>
 
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                {milestone.title}
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  {milestone.title}
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                  {milestone.type
+                    ? milestone.type.replace(/_/g, " ")
+                    : "Milestone"}
+                </p>
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1 mt-1">
                 {milestone.description}
               </p>
             </div>
           </div>
 
           {/* Meta Info */}
-          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-            <div className="flex items-center gap-1">
-              <FiCalendar className="w-4 h-4" />
-              {formatDate(milestone.date)}
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-1">
+                <FiCalendar className="w-4 h-4" />
+                {formatDate(milestone.date)}
+              </div>
+
+              {milestone.targetDate && (
+                <div className="flex items-center gap-1">
+                  <span className="text-xs">Target:</span>
+                  {formatDate(milestone.targetDate)}
+                </div>
+              )}
             </div>
 
-            {milestone.targetDate && (
-              <div className="flex items-center gap-1">
-                <span className="text-xs">Target:</span>
-                {formatDate(milestone.targetDate)}
-              </div>
-            )}
+            {/* Reminder indicator */}
+            {milestone.reminderOption &&
+              milestone.reminderOption !== "none" && (
+                <div className="flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-lg w-fit">
+                  <FiBell className="w-3 h-3" />
+                  <span className="capitalize">
+                    {milestone.reminderOption.replace(/_/g, " ")}
+                  </span>
+                </div>
+              )}
           </div>
 
           {/* Progress */}

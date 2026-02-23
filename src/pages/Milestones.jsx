@@ -1,12 +1,32 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { FiPlus, FiStar, FiTarget, FiCheck } from "react-icons/fi";
+import {
+  FiPlus,
+  FiStar,
+  FiTarget,
+  FiCheck,
+  FiFilter,
+  FiBell,
+} from "react-icons/fi";
 import { useMemory } from "../context/MemoryContext";
 import MemoryMilestone from "../components/memory/MemoryMilestone";
+import ReflectionPromptModal from "../components/memory/ReflectionPromptModal";
 import Modal from "../components/shared/Modal";
 import SearchBar from "../components/shared/SearchBar";
 import { formatDateForInput } from "../utils/formatDate";
 import Loader from "../components/shared/Loader";
+import {
+  MILESTONE_TYPES,
+  MILESTONE_TYPE_ICONS,
+  REMINDER_OPTIONS,
+} from "../utils/milestoneUtils";
+import {
+  getUpcomingReminders,
+  daysUntilMilestone,
+  formatDaysUntil,
+  showMilestoneCreated,
+  showMilestoneUpdated,
+} from "../utils/notificationUtils";
 
 const Milestones = () => {
   const {
@@ -17,15 +37,22 @@ const Milestones = () => {
     updateMilestone,
     deleteMilestone,
   } = useMemory();
+
   const [showForm, setShowForm] = useState(false);
+  const [showReflection, setShowReflection] = useState(false);
+  const [selectedMilestoneForReflection, setSelectedMilestoneForReflection] =
+    useState(null);
   const [editingMilestone, setEditingMilestone] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     date: formatDateForInput(new Date()),
+    type: "life_event",
     targetDate: "",
     targetCount: 10,
+    reminderOption: "1_week_before",
     isPrivate: false,
   });
 
@@ -35,7 +62,7 @@ const Milestones = () => {
 
   const normalizeSearchText = (value) => String(value || "").toLowerCase();
 
-  const filteredMilestones = searchQuery
+  const filteredBySearch = searchQuery
     ? milestones.filter(
         (m) =>
           normalizeSearchText(m.title).includes(
@@ -47,16 +74,30 @@ const Milestones = () => {
       )
     : milestones;
 
+  const filteredByCategory =
+    selectedCategory === "all"
+      ? filteredBySearch
+      : filteredBySearch.filter((m) => m.type === selectedCategory);
+
+  const filteredMilestones = filteredByCategory;
+
+  const upcomingMilestones = useMemo(
+    () => getUpcomingReminders(milestones, 30),
+    [milestones],
+  );
+
   const handleEdit = (milestone) => {
     setEditingMilestone(milestone);
     setFormData({
       title: milestone.title,
       description: milestone.description || "",
       date: formatDateForInput(milestone.date),
+      type: milestone.type || "life_event",
       targetDate: milestone.targetDate
         ? formatDateForInput(milestone.targetDate)
         : "",
       targetCount: milestone.targetCount || 10,
+      reminderOption: milestone.reminderOption || "1_week_before",
       isPrivate: milestone.isPrivate || false,
     });
     setShowForm(true);
@@ -68,12 +109,27 @@ const Milestones = () => {
     }
   };
 
+  const handleOpenReflection = (milestone) => {
+    setSelectedMilestoneForReflection(milestone);
+    setShowReflection(true);
+  };
+
+  const handleSaveReflection = async (reflectionData) => {
+    // This would save the reflection to the database
+    // For now, we'll just show a notification
+    console.log("Reflection saved:", reflectionData);
+    setShowReflection(false);
+    setSelectedMilestoneForReflection(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (editingMilestone) {
       await updateMilestone(editingMilestone._id, formData);
+      showMilestoneUpdated(formData);
     } else {
       await createMilestone(formData);
+      showMilestoneCreated(formData);
     }
     setShowForm(false);
     setEditingMilestone(null);
@@ -81,8 +137,10 @@ const Milestones = () => {
       title: "",
       description: "",
       date: formatDateForInput(new Date()),
+      type: "life_event",
       targetDate: "",
       targetCount: 10,
+      reminderOption: "1_week_before",
       isPrivate: false,
     });
   };
@@ -118,6 +176,16 @@ const Milestones = () => {
             whileTap={{ scale: 0.95 }}
             onClick={() => {
               setEditingMilestone(null);
+              setFormData({
+                title: "",
+                description: "",
+                date: formatDateForInput(new Date()),
+                type: "life_event",
+                targetDate: "",
+                targetCount: 10,
+                reminderOption: "1_week_before",
+                isPrivate: false,
+              });
               setShowForm(true);
             }}
             className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 text-stone-900 rounded-xl font-semibold text-sm hover:from-amber-500 hover:to-amber-600 transition-all"
@@ -127,6 +195,39 @@ const Milestones = () => {
           </motion.button>
         </div>
       </div>
+
+      {/* Upcoming Reminders */}
+      {upcomingMilestones.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border-l-4 border-amber-400"
+        >
+          <div className="flex items-start gap-3">
+            <FiBell className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-amber-900">
+                Upcoming Milestones
+              </p>
+              <p className="text-sm text-amber-800 mt-1">
+                You have {upcomingMilestones.length} milestone
+                {upcomingMilestones.length !== 1 ? "s" : ""} coming up in the
+                next 30 days
+              </p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {upcomingMilestones.slice(0, 3).map((m) => (
+                  <span
+                    key={m._id}
+                    className="text-xs bg-white px-2 py-1 rounded-full text-amber-900"
+                  >
+                    {m.title} ({formatDaysUntil(daysUntilMilestone(m.date))})
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -157,6 +258,52 @@ const Milestones = () => {
             </div>
           </div>
         </div>
+
+        <div className="bg-white rounded-2xl p-4 border border-stone-100">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
+              <FiBell className="w-5 h-5 text-indigo-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-stone-900">
+                {upcomingMilestones.length}
+              </p>
+              <p className="text-sm text-stone-500">Upcoming</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Category Filter */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setSelectedCategory("all")}
+          className={`px-4 py-2 rounded-xl font-medium whitespace-nowrap transition-all ${
+            selectedCategory === "all"
+              ? "bg-amber-400 text-stone-900"
+              : "bg-stone-100 text-stone-700 hover:bg-stone-200"
+          }`}
+        >
+          All Types
+        </motion.button>
+
+        {Object.entries(MILESTONE_TYPES).map(([key, label]) => (
+          <motion.button
+            key={key}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setSelectedCategory(key)}
+            className={`px-4 py-2 rounded-xl font-medium whitespace-nowrap transition-all ${
+              selectedCategory === key
+                ? "bg-indigo-400 text-white"
+                : "bg-stone-100 text-stone-700 hover:bg-stone-200"
+            }`}
+          >
+            {MILESTONE_TYPE_ICONS[key]} {label}
+          </motion.button>
+        ))}
       </div>
 
       {/* Content */}
@@ -175,23 +322,56 @@ const Milestones = () => {
             Create Your First Milestone
           </button>
         </div>
-      ) : searchQuery && filteredMilestones.length === 0 ? (
+      ) : filteredMilestones.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-stone-500">
-            No milestones found for "{searchQuery}"
+            No milestones found
+            {searchQuery && ` for "${searchQuery}"`}
+            {selectedCategory !== "all" &&
+              ` in ${MILESTONE_TYPES[selectedCategory]}`}
           </p>
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredMilestones.map((milestone) => (
-            <MemoryMilestone
-              key={milestone._id}
-              milestone={milestone}
-              onClick={() => handleEdit(milestone)}
-            />
+            <div key={milestone._id} className="flex flex-col">
+              <MemoryMilestone
+                milestone={milestone}
+                onClick={() => handleEdit(milestone)}
+              />
+              <div className="flex gap-2 mt-2">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleOpenReflection(milestone)}
+                  className="flex-1 px-3 py-2 bg-gradient-to-r from-indigo-400 to-indigo-500 text-white rounded-lg text-sm font-medium hover:from-indigo-500 hover:to-indigo-600 transition-all"
+                >
+                  💭 Reflect
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleDelete(milestone._id)}
+                  className="px-3 py-2 bg-stone-100 text-stone-700 rounded-lg text-sm font-medium hover:bg-stone-200 transition-all"
+                >
+                  🗑️
+                </motion.button>
+              </div>
+            </div>
           ))}
         </div>
       )}
+
+      {/* Reflection Modal */}
+      <ReflectionPromptModal
+        isOpen={showReflection}
+        onClose={() => {
+          setShowReflection(false);
+          setSelectedMilestoneForReflection(null);
+        }}
+        milestone={selectedMilestoneForReflection}
+        onSaveReflection={handleSaveReflection}
+      />
 
       {/* Milestone Form Modal */}
       <Modal
@@ -218,6 +398,25 @@ const Milestones = () => {
               className="w-full px-4 py-2.5 rounded-xl border-2 border-transparent bg-stone-50 text-stone-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all"
               placeholder="Milestone title"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-stone-700 mb-1">
+              Type
+            </label>
+            <select
+              value={formData.type}
+              onChange={(e) =>
+                setFormData({ ...formData, type: e.target.value })
+              }
+              className="w-full px-4 py-2.5 rounded-xl border-2 border-transparent bg-stone-50 text-stone-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all"
+            >
+              {Object.entries(MILESTONE_TYPES).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {MILESTONE_TYPE_ICONS[key]} {label}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
@@ -280,6 +479,25 @@ const Milestones = () => {
               }
               className="w-full px-4 py-2.5 rounded-xl border-2 border-transparent bg-stone-50 text-stone-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-stone-700 mb-1">
+              Reminder
+            </label>
+            <select
+              value={formData.reminderOption}
+              onChange={(e) =>
+                setFormData({ ...formData, reminderOption: e.target.value })
+              }
+              className="w-full px-4 py-2.5 rounded-xl border-2 border-transparent bg-stone-50 text-stone-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all"
+            >
+              {REMINDER_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-stone-200">

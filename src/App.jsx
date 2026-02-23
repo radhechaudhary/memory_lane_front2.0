@@ -34,6 +34,7 @@ import Milestones from "./pages/Milestones";
 import MapView from "./pages/MapView";
 import SharedMemories from "./pages/SharedMemories";
 import Photos from "./pages/Photos";
+import SearchMemories from "./pages/SearchMemories";
 import NotFound from "./pages/NotFound";
 
 const PublicRoute = ({ children }) => {
@@ -176,6 +177,16 @@ const AppRoutes = () => (
           <UserRoute>
             <UserLayout>
               <Photos />
+            </UserLayout>
+          </UserRoute>
+        }
+      />
+      <Route
+        path="/search"
+        element={
+          <UserRoute>
+            <UserLayout>
+              <SearchMemories />
             </UserLayout>
           </UserRoute>
         }

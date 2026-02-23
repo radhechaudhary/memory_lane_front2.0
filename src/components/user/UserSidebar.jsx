@@ -13,6 +13,7 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiLogOut,
+  FiSearch,
 } from "react-icons/fi";
 import { useAuth } from "../../hooks/useAuth";
 import { useMemory } from "../../context/MemoryContext";
@@ -62,6 +63,7 @@ const UserSidebar = ({
   ];
 
   const secondaryLinks = [
+    { path: "/search", label: "Search Memories", icon: FiSearch },
     { path: "/shared", label: "Shared Memories", icon: FiUsers },
     { path: "/support", label: "Support", icon: FiHelpCircle },
   ];

@@ -55,7 +55,7 @@ const UserSidebar = ({
   const mainLinks = [
     { path: "/dashboard", label: "Dashboard", icon: FiHome },
     { path: "/timeline", label: "Timeline", icon: FiClock },
-    { path: "/photos", label: "Photos", icon: FiCamera },
+    { path: "/photos", label: "Gallery", icon: FiCamera },
     { path: "/albums", label: "Albums", icon: FiImage },
     { path: "/milestones", label: "Milestones", icon: FiStar },
     { path: "/map", label: "Memory Map", icon: FiMapPin },

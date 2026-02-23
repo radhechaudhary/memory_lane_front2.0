@@ -132,7 +132,7 @@ const UserHeader = ({ onMobileMenuToggle }) => {
       case "/dashboard":
         return "Dashboard";
       case "/photos":
-        return "Photos";
+        return "Gallery";
       case "/timeline":
         return "Timeline";
       case "/albums":

@@ -50,7 +50,9 @@ const MapView = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">Memory Map</h1>
+          <h1 className="text-2xl font-bold text-stone-900">
+            Memory Journey Map
+          </h1>
           <p className="text-stone-500">
             {memoriesWithLocation.length}{" "}
             {memoriesWithLocation.length === 1 ? "location" : "locations"}{" "}

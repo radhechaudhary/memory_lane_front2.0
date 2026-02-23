@@ -821,7 +821,7 @@ body {
 
 /* Stat card */
 .stat-card {
-  @apply bg-white rounded-2xl p-5 border border-stone-100;
+  @apply bg-white rounded-2xl p-4 border border-stone-100;
   box-shadow: 0 4px 16px rgba(28, 25, 23, 0.06);
   transition:
     transform 0.25s ease,

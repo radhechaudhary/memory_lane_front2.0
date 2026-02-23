@@ -4,7 +4,6 @@ import {
   FiClock,
   FiImage,
   FiStar,
-  FiMapPin,
   FiPlus,
   FiSun,
   FiHeart,
@@ -15,7 +14,6 @@ import { useAuth } from "../hooks/useAuth";
 import { useMemory } from "../context/MemoryContext";
 import MemoryCard from "../components/memory/MemoryCard";
 import AlbumCard from "../components/album/AlbumCard";
-import MemoryMap from "../components/map/MemoryMap";
 import MemoryForm from "../components/memory/MemoryForm";
 import ReminisceModal from "../components/modal/ReminisceModal";
 import Loader from "../components/shared/Loader";
@@ -86,9 +84,6 @@ const Dashboard = () => {
 
   // Get favorite memories
   const favoriteMemories = memories.filter((m) => m.isFavorite);
-
-  // Get memories with location
-  const memoriesWithLocation = memories.filter((m) => m.location?.coordinates);
 
   const getMemoryAlbumId = (memory) => {
     return (
@@ -256,16 +251,16 @@ const Dashboard = () => {
       variants={container}
       initial="hidden"
       animate="show"
-      className="space-y-8"
+      className="space-y-6"
     >
       {/* Welcome Section */}
-      <motion.div variants={item} className="premium-header p-4 md:p-8">
-        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+      <motion.div variants={item} className="premium-header p-3 md:p-5">
+        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl lg:text-4xl font-bold text-[var(--color-text-primary)] mb-2">
+            <h1 className="text-2xl lg:text-3xl font-bold text-[var(--color-text-primary)] mb-1">
               Welcome back, {user?.username || "there"}! 👋
             </h1>
-            <p className="text-[var(--color-text-secondary)] text-lg">
+            <p className="text-[var(--color-text-secondary)] text-sm md:text-base">
               You have{" "}
               <span className="font-semibold text-amber-600">
                 {memories.length} memories
@@ -282,9 +277,9 @@ const Dashboard = () => {
             }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowReminisce(true)}
-            className="btn-reminisce"
+            className="btn-reminisce px-4 py-2 text-sm"
           >
-            <FiSun className="w-5 h-5" />
+            <FiSun className="w-4 h-4" />
             Reminisce
           </motion.button>
         </div>
@@ -292,46 +287,33 @@ const Dashboard = () => {
 
       <motion.div
         variants={item}
-        className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-3"
       >
         {stats.map((stat, index) => (
-          <Link key={index} to={stat.link} className="stat-card group">
-            <div
-              className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}
-            >
-              <stat.icon className="w-6 h-6 text-white" />
+          <Link
+            key={index}
+            to={stat.link}
+            className="group rounded-2xl border border-[var(--color-surface-border)] bg-[var(--color-surface-bg)] p-4 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-xs md:text-sm text-[var(--color-text-secondary)] font-medium">
+                {stat.label}
+              </p>
+              <div
+                className={`w-9 h-9 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center group-hover:scale-110 transition-transform`}
+              >
+                <stat.icon className="w-4 h-4 text-white" />
+              </div>
             </div>
-            <p className="text-3xl font-bold text-[var(--color-text-primary)]">
+            <p className="text-2xl font-bold text-[var(--color-text-primary)] leading-tight">
               {stat.value}
-            </p>
-            <p className="text-sm text-[var(--color-text-secondary)] font-medium">
-              {stat.label}
             </p>
           </Link>
         ))}
       </motion.div>
 
-      {/* Full Width Map Section */}
-      <motion.div variants={item} className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-[var(--color-text-primary)] flex items-center gap-2">
-            <FiMapPin className="text-amber-500" />
-            Memory Journey Map
-          </h2>
-          <Link
-            to="/map"
-            className="text-amber-600 text-sm font-semibold hover:underline bg-amber-50 px-3 py-1 rounded-full"
-          >
-            View Full Screen →
-          </Link>
-        </div>
-        <div className="bg-[var(--color-surface-bg)] p-2 rounded-2xl border border-[var(--color-surface-border)] shadow-sm overflow-hidden">
-          <MemoryMap memories={memoriesWithLocation} height="350px" />
-        </div>
-      </motion.div>
-
       {/* Horizontal Favorites Section */}
-      <motion.div variants={item} className="space-y-4">
+      <motion.div variants={item} className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-[var(--color-text-primary)] flex items-center gap-2">
             <FiHeart className="text-rose-500 fill-current" />
@@ -348,7 +330,7 @@ const Dashboard = () => {
         </div>
 
         {favoriteMemories.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {favoriteMemories.slice(0, 6).map((memory) => (
               <Link
                 key={memory._id}
@@ -376,7 +358,7 @@ const Dashboard = () => {
             ))}
           </div>
         ) : (
-          <div className="bg-[var(--color-surface-bg)] border border-dashed border-[var(--color-surface-border)] rounded-2xl p-8 text-center">
+          <div className="bg-[var(--color-surface-bg)] border border-dashed border-[var(--color-surface-border)] rounded-2xl p-6 text-center">
             <p className="text-sm text-[var(--color-text-secondary)]">
               Your favorite memories will appear here. Heart some memories to
               see them!
@@ -386,7 +368,7 @@ const Dashboard = () => {
       </motion.div>
 
       {/* Horizontal Photo Grid Section (Renamed from Recent Memories) */}
-      <motion.div variants={item} className="space-y-6">
+      <motion.div variants={item} className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-[var(--color-text-primary)] flex items-center gap-2">
             <FiImage className="text-amber-500" />
@@ -401,7 +383,7 @@ const Dashboard = () => {
         </div>
 
         {recentItems.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {recentItemsWithAlbumData.map((item) =>
               item.type === "album" ? (
                 <AlbumCard
@@ -421,14 +403,14 @@ const Dashboard = () => {
             )}
           </div>
         ) : (
-          <div className="bg-[var(--color-surface-bg)] rounded-2xl p-12 text-center border border-[var(--color-surface-border)] shadow-sm">
-            <div className="w-20 h-20 rounded-full bg-amber-50/50 flex items-center justify-center mx-auto mb-6">
-              <FiClock className="w-10 h-10 text-amber-400" />
+          <div className="bg-[var(--color-surface-bg)] rounded-2xl p-8 text-center border border-[var(--color-surface-border)] shadow-sm">
+            <div className="w-16 h-16 rounded-full bg-amber-50/50 flex items-center justify-center mx-auto mb-4">
+              <FiClock className="w-8 h-8 text-amber-400" />
             </div>
             <h3 className="text-xl font-bold text-[var(--color-text-primary)] mb-2">
               No memories yet
             </h3>
-            <p className="text-stone-500 mb-6 max-w-xs mx-auto">
+            <p className="text-stone-500 mb-4 max-w-xs mx-auto">
               Capture your first moment and start your digital memory lane
               today.
             </p>
@@ -447,7 +429,7 @@ const Dashboard = () => {
 
       {/* Shared Memories Section */}
       {sharedMemories.length > 0 && (
-        <motion.div variants={item} className="space-y-4">
+        <motion.div variants={item} className="space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold text-[var(--color-text-primary)] flex items-center gap-2">
               <FiImage className="text-amber-500" />
@@ -461,22 +443,22 @@ const Dashboard = () => {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {sharedMemories.slice(0, 3).map((memory) => (
               <Link
                 key={memory._id || memory.id}
                 to={getMemoryRedirectPath(memory)}
-                className="flex items-center gap-4 bg-[var(--color-surface-bg)] p-4 rounded-xl border border-[var(--color-surface-border)] shadow-sm hover:shadow-md transition-all group"
+                className="flex items-center gap-3 bg-[var(--color-surface-bg)] p-3 rounded-xl border border-[var(--color-surface-border)] shadow-sm hover:shadow-md transition-all group"
               >
                 {memory.media?.[0]?.type === "image" ? (
                   <img
                     src={memory.media[0].url}
                     alt={memory.title}
-                    className="h-16 w-16 rounded-lg object-cover shadow-inner"
+                    className="h-14 w-14 rounded-lg object-cover shadow-inner"
                   />
                 ) : (
-                  <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-amber-50">
-                    <FiImage className="h-8 w-8 text-amber-400" />
+                  <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-amber-50">
+                    <FiImage className="h-7 w-7 text-amber-400" />
                   </div>
                 )}
 

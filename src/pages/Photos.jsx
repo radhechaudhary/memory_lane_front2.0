@@ -154,14 +154,14 @@ const Photos = () => {
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-stone-900 via-stone-800 to-stone-900 rounded-3xl p-8 text-white shadow-xl overflow-hidden relative"
+        className="bg-gradient-to-r from-stone-900 via-stone-800 to-stone-900 rounded-3xl p-6 text-white shadow-xl overflow-hidden relative"
       >
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-              Personal Photos
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+              Personal Gallery
             </h1>
-            <p className="text-stone-300 text-lg max-w-xl">
+            <p className="text-stone-300 text-base max-w-xl leading-relaxed">
               Every moment is a memory waiting to be preserved. Your independent
               moments, gathered in one place.
             </p>
@@ -174,9 +174,9 @@ const Photos = () => {
               }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowMemoryForm(true)}
-              className="px-8 py-4 bg-amber-400 text-stone-900 rounded-2xl font-bold text-lg hover:bg-amber-300 transition-all flex items-center gap-3 shadow-lg"
+              className="px-6 py-3 bg-amber-400 text-stone-900 rounded-xl font-bold text-base hover:bg-amber-300 transition-all flex items-center gap-2.5 shadow-lg"
             >
-              <FiPlus className="w-6 h-6" />
+              <FiPlus className="w-5 h-5" />
               Capture Today
             </motion.button>
           </div>

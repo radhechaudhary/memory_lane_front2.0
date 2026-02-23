@@ -25,7 +25,14 @@ const AlbumCard = ({
     album.coverImage ||
     null;
 
-  const memoryCount = album.memories?.length || 0;
+  const memoryCount = Number(
+    album.memoryCount ??
+      album.memory_count ??
+      album.memories_count ??
+      (Array.isArray(album.memories) ? album.memories.length : 0),
+  );
+  const safeMemoryCount = Number.isFinite(memoryCount) ? memoryCount : 0;
+  const privacyLabel = album.isPrivate ? "Private" : "Public";
 
   return (
     <motion.div
@@ -84,7 +91,7 @@ const AlbumCard = ({
 
         {/* Memory Count */}
         <div className="absolute bottom-3 left-3 px-3 py-1.5 bg-amber-500 rounded-full text-sm font-medium text-white z-10">
-          {memoryCount} {memoryCount === 1 ? "memory" : "memories"}
+          {safeMemoryCount} {safeMemoryCount === 1 ? "memory" : "memories"}
         </div>
 
         {/* Actions Menu */}
@@ -152,6 +159,11 @@ const AlbumCard = ({
         <h3 className="font-semibold text-stone-900 mb-1 group-hover:text-amber-700 transition-colors">
           {album.name}
         </h3>
+
+        <p className="mb-2 text-xs font-medium text-stone-500">
+          {privacyLabel} • {safeMemoryCount}{" "}
+          {safeMemoryCount === 1 ? "memory" : "memories"}
+        </p>
 
         {album.description && (
           <p className="text-sm text-stone-600 line-clamp-2">

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FiLogIn, FiMail, FiLock, FiArrowLeft } from "react-icons/fi";
+import { FiLogIn, FiMail, FiLock } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../../hooks/useAuth";
@@ -70,10 +70,6 @@ const Login = () => {
         replace: true,
       });
     }, 1500);
-  };
-
-  const handleBackClick = () => {
-    navigate("/", { replace: true });
   };
 
   return (

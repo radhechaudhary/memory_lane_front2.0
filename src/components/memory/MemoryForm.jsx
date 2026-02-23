@@ -197,7 +197,7 @@ const MemoryForm = ({
         </div>
 
         {/* Date & Category */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Date *
@@ -273,7 +273,7 @@ const MemoryForm = ({
           </label>
           <div className="border-2 border-dashed border-gray-300 rounded-xl p-4">
             {formData.media.length > 0 ? (
-              <div className="grid grid-cols-4 gap-2 mb-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
                 {formData.media.map((item, index) => (
                   <div
                     key={index}

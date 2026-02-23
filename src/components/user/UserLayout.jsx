@@ -1,14 +1,21 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import UserSidebar from './UserSidebar';
-import UserHeader from './UserHeader';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import UserSidebar from "./UserSidebar";
+import UserHeader from "./UserHeader";
 
 const UserLayout = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
+
+  useEffect(() => {
+    const checkScreen = () => setIsLargeScreen(window.innerWidth >= 1024);
+    window.addEventListener("resize", checkScreen);
+    return () => window.removeEventListener("resize", checkScreen);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-[#F8F6F2]">
+    <div className="min-h-screen bg-[var(--color-page-bg)]">
       {/* Background Orbs for premium feel */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="premium-bg-orb premium-bg-orb-a" />
@@ -16,7 +23,7 @@ const UserLayout = ({ children }) => {
       </div>
 
       {/* Sidebar */}
-      <UserSidebar 
+      <UserSidebar
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
         mobileOpen={mobileMenuOpen}
@@ -26,27 +33,25 @@ const UserLayout = ({ children }) => {
       {/* Main Content Area */}
       <motion.div
         initial={false}
-        animate={{ 
-          marginLeft: sidebarCollapsed ? 80 : 280
+        animate={{
+          marginLeft: isLargeScreen ? (sidebarCollapsed ? 80 : 280) : 0,
         }}
         className="transition-all duration-300 min-h-screen"
       >
         {/* Header */}
-        <UserHeader 
+        <UserHeader
           onMobileMenuToggle={() => setMobileMenuOpen(!mobileMenuOpen)}
         />
 
         {/* Page Content */}
         <main className="p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto">
-            {children}
-          </div>
+          <div className="max-w-7xl mx-auto">{children}</div>
         </main>
       </motion.div>
 
       {/* Mobile Overlay */}
       {mobileMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/30 z-40 lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
         />
@@ -56,4 +61,3 @@ const UserLayout = ({ children }) => {
 };
 
 export default UserLayout;
-

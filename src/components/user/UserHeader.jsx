@@ -131,6 +131,8 @@ const UserHeader = ({ onMobileMenuToggle }) => {
     switch (location.pathname) {
       case "/dashboard":
         return "Dashboard";
+      case "/photos":
+        return "Photos";
       case "/timeline":
         return "Timeline";
       case "/albums":
@@ -149,20 +151,22 @@ const UserHeader = ({ onMobileMenuToggle }) => {
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-stone-200">
+    <header className="sticky top-0 z-30 bg-[var(--color-surface-bg)]/80 backdrop-blur-md border-b border-[var(--color-surface-border)]">
       <div className="flex items-center justify-between h-16 px-4 lg:px-8">
         {/* Left Section */}
         <div className="flex items-center gap-4">
           {/* Mobile Menu Button */}
           <button
             onClick={onMobileMenuToggle}
-            className="lg:hidden p-2 rounded-lg hover:bg-stone-100 transition-colors"
+            className="lg:hidden p-2 rounded-lg hover:bg-[var(--color-page-bg)] transition-colors"
           >
-            <FiMenu className="w-5 h-5 text-stone-600" />
+            <FiMenu className="w-5 h-5 text-[var(--color-text-secondary)]" />
           </button>
 
           {/* Page Title */}
-          <h1 className="text-xl font-bold text-stone-900">{getPageTitle()}</h1>
+          <h1 className="text-lg md:text-xl font-bold text-[var(--color-text-primary)] truncate max-w-[120px] sm:max-w-none">
+            {getPageTitle()}
+          </h1>
         </div>
 
         {/* Right Section */}
@@ -182,31 +186,29 @@ const UserHeader = ({ onMobileMenuToggle }) => {
           </div>
 
           <Link
-            to="/timeline"
+            to="/photos"
             className="hidden md:inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500 text-stone-900 text-sm font-semibold hover:bg-amber-600 transition-colors"
           >
-            <FiPlus className="w-4 h-4" />
             Memories
           </Link>
 
           {/* Mobile Search Toggle */}
           <button
             onClick={() => setSearchOpen(!searchOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-stone-100 transition-colors"
+            className="md:hidden p-2 rounded-lg hover:bg-[var(--color-page-bg)] transition-colors"
           >
             {searchOpen ? (
-              <FiX className="w-5 h-5 text-stone-600" />
+              <FiX className="w-5 h-5 text-[var(--color-text-secondary)]" />
             ) : (
-              <FiSearch className="w-5 h-5 text-stone-600" />
+              <FiSearch className="w-5 h-5 text-[var(--color-text-secondary)]" />
             )}
           </button>
 
           <Link
-            to="/timeline"
+            to="/photos"
             className="md:hidden inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-500 text-stone-900 text-sm font-semibold hover:bg-amber-600 transition-colors"
             aria-label=" Memories"
           >
-            <FiPlus className="w-4 h-4" />
             Memories
           </Link>
 
@@ -223,9 +225,9 @@ const UserHeader = ({ onMobileMenuToggle }) => {
                   localStorage.setItem(NOTIFICATION_LAST_SEEN_KEY, nowIso);
                 }
               }}
-              className="relative p-2 rounded-lg hover:bg-stone-100 transition-colors"
+              className="relative p-2 rounded-lg hover:bg-[var(--color-page-bg)] transition-colors"
             >
-              <FiBell className="w-5 h-5 text-stone-600" />
+              <FiBell className="w-5 h-5 text-[var(--color-text-secondary)]" />
               {unreadCount > 0 ? (
                 <span className="notification-badge">{unreadCount}</span>
               ) : null}
@@ -237,10 +239,10 @@ const UserHeader = ({ onMobileMenuToggle }) => {
                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute right-0 mt-2 w-80 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg"
+                  className="absolute right-0 mt-2 w-80 overflow-hidden rounded-xl border border-[var(--color-surface-border)] bg-[var(--color-surface-bg)] shadow-lg"
                 >
-                  <div className="border-b border-stone-200 px-4 py-3">
-                    <h3 className="text-sm font-semibold text-stone-900">
+                  <div className="border-b border-[var(--color-surface-border)] px-4 py-3">
+                    <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
                       Notifications
                     </h3>
                   </div>
@@ -256,12 +258,12 @@ const UserHeader = ({ onMobileMenuToggle }) => {
                           key={item.id}
                           to={item.href}
                           onClick={() => setShowNotifications(false)}
-                          className="block border-b border-stone-100 px-4 py-3 hover:bg-stone-50"
+                          className="block border-b border-[var(--color-surface-border)] px-4 py-3 hover:bg-[var(--color-page-bg)]"
                         >
-                          <p className="text-sm font-medium text-stone-900">
+                          <p className="text-sm font-medium text-[var(--color-text-primary)]">
                             {item.title}
                           </p>
-                          <p className="mt-1 text-xs text-stone-500">
+                          <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
                             {item.createdAt
                               ? formatDate(item.createdAt, "relative")
                               : "Recently"}
@@ -289,7 +291,7 @@ const UserHeader = ({ onMobileMenuToggle }) => {
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setProfileOpen(!profileOpen)}
-              className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-stone-100 transition-colors"
+              className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-[var(--color-page-bg)] transition-colors"
             >
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center">
                 {user?.avatar ? (
@@ -312,22 +314,24 @@ const UserHeader = ({ onMobileMenuToggle }) => {
                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg"
+                  className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-[var(--color-surface-border)] bg-[var(--color-surface-bg)] shadow-lg"
                 >
-                  <div className="border-b border-stone-200 px-4 py-3">
-                    <p className="text-sm font-semibold text-stone-900">
+                  <div className="border-b border-[var(--color-surface-border)] px-4 py-3">
+                    <p className="text-sm font-semibold text-[var(--color-text-primary)]">
                       {user?.name || user?.username || "User"}
                     </p>
-                    <p className="text-xs text-stone-500">{user?.email}</p>
+                    <p className="text-xs text-[var(--color-text-secondary)]">
+                      {user?.email}
+                    </p>
                   </div>
 
                   <div className="py-1">
                     <Link
                       to="/settings"
                       onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-stone-700 hover:bg-stone-100"
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-page-bg)]"
                     >
-                      <FiSettings className="w-4 h-4" />
+                      <FiSettings className="w-4 h-4 text-[var(--color-text-secondary)]" />
                       Settings
                     </Link>
                   </div>

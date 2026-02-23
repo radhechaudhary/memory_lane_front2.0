@@ -2,16 +2,15 @@
 @import "tailwindcss";
 
 @theme {
-  /* Premium Light Mode Color System */
-  --color-page-bg: #f8f6f2;
+  --color-page-bg: #f8f6f2; /* stone-50 variant */
   --color-surface-bg: #ffffff;
-  --color-surface-border: #eae7e2;
-  --color-text-primary: #1f1f1f;
-  --color-text-secondary: #6b6b6b;
-  --color-accent-gold: #f4b400;
-  --color-accent-gold-dark: #e39b00;
-  --color-timeline-line: #e5e0d8;
-  --color-timeline-dot: #f4b400;
+  --color-surface-border: #e7e5e4; /* stone-200 */
+  --color-text-primary: #1c1917; /* stone-900 */
+  --color-text-secondary: #57534e; /* stone-600 */
+  --color-accent-gold: #f59e0b; /* amber-500 */
+  --color-accent-gold-dark: #d97706; /* amber-600 */
+  --color-timeline-line: #e7e5e4;
+  --color-timeline-dot: #f59e0b;
 
   /* Font family */
   --font-family-sans: "Plus Jakarta Sans", sans-serif;
@@ -30,20 +29,19 @@ body,
 }
 
 body {
-  @apply bg-[#F8F6F2] text-stone-900;
+  @apply bg-[var(--color-page-bg)] text-[var(--color-text-primary)];
   font-family: "Plus Jakarta Sans", sans-serif;
-  color: var(--text-primary);
 }
 
 /* Premium surface styles */
 .premium-surface {
-  @apply bg-white rounded-2xl border border-stone-100;
-  box-shadow: 0 4px 20px rgba(28, 25, 23, 0.08);
+  @apply bg-[var(--color-surface-bg)] rounded-2xl border border-[var(--color-surface-border)];
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 .premium-card {
-  @apply bg-white rounded-2xl border border-stone-100;
-  box-shadow: 0 4px 20px rgba(28, 25, 23, 0.06);
+  @apply bg-[var(--color-surface-bg)] rounded-2xl border border-[var(--color-surface-border)];
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
   transition:
     transform 0.25s ease,
     box-shadow 0.25s ease;
@@ -51,13 +49,13 @@ body {
 
 .premium-card:hover {
   @apply -translate-y-1;
-  box-shadow: 0 12px 28px rgba(28, 25, 23, 0.12);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
 }
 
 /* Memory card with glow effect */
 .memory-card {
-  @apply bg-white rounded-[20px] border border-stone-100 overflow-hidden;
-  box-shadow: 0 4px 16px rgba(28, 25, 23, 0.06);
+  @apply bg-[var(--color-surface-bg)] rounded-[20px] border border-[var(--color-surface-border)] overflow-hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
   transition:
     transform 0.25s ease,
     box-shadow 0.25s ease,
@@ -66,19 +64,19 @@ body {
 
 .memory-card:hover {
   @apply -translate-y-1;
-  box-shadow: 0 12px 28px rgba(28, 25, 23, 0.12);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
 }
 
 .memory-card.milestone {
-  border-color: rgba(244, 180, 0, 0.5);
+  border-color: var(--color-accent-gold);
   box-shadow:
-    0 4px 16px rgba(28, 25, 23, 0.06),
+    0 4px 16px rgba(0, 0, 0, 0.04),
     0 0 20px rgba(244, 180, 0, 0.15);
 }
 
 .memory-card.milestone:hover {
   box-shadow:
-    0 12px 28px rgba(28, 25, 23, 0.12),
+    0 12px 28px rgba(0, 0, 0, 0.08),
     0 0 30px rgba(244, 180, 0, 0.25);
 }
 
@@ -90,34 +88,34 @@ body {
 .timeline-date-separator::before,
 .timeline-date-separator::after {
   content: "";
-  @apply flex-1 h-px bg-stone-200;
+  @apply flex-1 h-px bg-[var(--color-surface-border)];
 }
 
 .timeline-date-text {
-  @apply text-xl font-semibold text-stone-800 tracking-tight;
+  @apply text-xl font-semibold text-[var(--color-text-primary)] tracking-tight;
   font-family: "Plus Jakarta Sans", sans-serif;
 }
 
 /* Sidebar navigation */
 .sidebar-item {
-  @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-stone-600 transition-all duration-200;
+  @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-[var(--color-text-secondary)] transition-all duration-200;
 }
 
 .sidebar-item:hover {
-  @apply bg-stone-100 text-stone-800;
+  @apply bg-[var(--color-page-bg)] text-[var(--color-text-primary)];
 }
 
 .sidebar-item.active {
-  @apply bg-amber-50 text-amber-700;
+  @apply bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400;
 }
 
 /* Tag pills */
 .tag-pill {
-  @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-stone-100 text-stone-600 transition-all duration-200;
+  @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--color-page-bg)] text-[var(--color-text-secondary)] transition-all duration-200;
 }
 
 .tag-pill:hover {
-  @apply bg-amber-100 text-amber-700;
+  @apply bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400;
 }
 
 .tag-pill.milestone {
@@ -140,11 +138,11 @@ body {
 
 /* Outline button */
 .btn-outline {
-  @apply inline-flex items-center justify-center px-5 py-2.5 rounded-full border border-stone-200 bg-white text-stone-700 font-semibold text-sm transition-all duration-200;
+  @apply inline-flex items-center justify-center px-5 py-2.5 rounded-full border border-[var(--color-surface-border)] bg-[var(--color-surface-bg)] text-[var(--color-text-primary)] font-semibold text-sm transition-all duration-200;
 }
 
 .btn-outline:hover {
-  @apply border-stone-300 bg-stone-50;
+  @apply border-stone-300 bg-stone-50 dark:border-stone-600 dark:bg-stone-800;
 }
 
 /* Search input */

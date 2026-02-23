@@ -47,7 +47,7 @@ const ReminisceModal = ({ isOpen, onClose, memories = [] }) => {
 
   const handlePrev = () => {
     if (!memories.length) return;
-    setCurrentIndex((prev) => (prev - 1 + memories.length) % memories.length);
+    setCurrentIndex((prev) => (prev - (1).length) % memories.length);
   };
 
   const handleClose = () => {
@@ -72,12 +72,12 @@ const ReminisceModal = ({ isOpen, onClose, memories = [] }) => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-2xl"
+            className="relative w-full max-w-md rounded-3xl bg-[var(--color-surface-bg)] p-8 text-center shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={handleClose}
-              className="absolute right-4 top-4 rounded-full p-2 text-stone-500 transition-colors hover:bg-stone-100"
+              className="absolute right-4 top-4 rounded-full p-2 text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-page-bg)]"
             >
               <FiX className="h-5 w-5" />
             </button>
@@ -85,10 +85,10 @@ const ReminisceModal = ({ isOpen, onClose, memories = [] }) => {
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
               <FiStar className="h-8 w-8 text-amber-500" />
             </div>
-            <h3 className="text-xl font-semibold text-stone-900">
+            <h3 className="text-xl font-semibold text-[var(--color-text-primary)]">
               No memories yet
             </h3>
-            <p className="mt-2 text-sm text-stone-600">
+            <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
               Create your first memory to start reminiscing.
             </p>
             <button
@@ -123,15 +123,15 @@ const ReminisceModal = ({ isOpen, onClose, memories = [] }) => {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-2xl bg-white rounded-3xl overflow-hidden shadow-2xl"
+          className="relative w-full max-w-2xl bg-[var(--color-surface-bg)] rounded-3xl overflow-hidden shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close Button */}
           <button
             onClick={handleClose}
-            className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
+            className="absolute top-4 right-4 z-10 p-2 rounded-full bg-[var(--color-surface-bg)]/80 backdrop-blur-sm hover:bg-[var(--color-surface-bg)] transition-colors"
           >
-            <FiX className="w-5 h-5 text-stone-700" />
+            <FiX className="w-5 h-5 text-[var(--color-text-secondary)]" />
           </button>
 
           {/* Hero Image */}
@@ -190,7 +190,7 @@ const ReminisceModal = ({ isOpen, onClose, memories = [] }) => {
           <div className="p-6">
             {/* Description */}
             {currentMemory.description && (
-              <p className="text-stone-600 mb-6 leading-relaxed">
+              <p className="text-[var(--color-text-primary)] mb-6 leading-relaxed">
                 {currentMemory.description}
               </p>
             )}
@@ -201,7 +201,7 @@ const ReminisceModal = ({ isOpen, onClose, memories = [] }) => {
                 {currentMemory.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm"
+                    className="px-3 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 rounded-full text-sm"
                   >
                     #{tag}
                   </span>
@@ -225,17 +225,17 @@ const ReminisceModal = ({ isOpen, onClose, memories = [] }) => {
 
             {/* Media Count */}
             {currentMemory.media?.length > 1 && (
-              <div className="flex items-center gap-2 text-stone-500 text-sm mb-6">
+              <div className="flex items-center gap-2 text-[var(--color-text-secondary)] text-sm mb-6">
                 <FiImage className="w-4 h-4" />
                 {currentMemory.media.length} memories in this moment
               </div>
             )}
 
             {/* Navigation */}
-            <div className="flex items-center justify-between pt-4 border-t border-stone-200">
+            <div className="flex items-center justify-between pt-4 border-t border-[var(--color-surface-border)]">
               <button
                 onClick={handlePrev}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-stone-600 hover:bg-stone-100 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-[var(--color-text-secondary)] hover:bg-[var(--color-page-bg)] transition-colors"
               >
                 <FiChevronLeft className="w-5 h-5" />
                 Previous
@@ -251,7 +251,7 @@ const ReminisceModal = ({ isOpen, onClose, memories = [] }) => {
                       ${
                         index === currentIndex
                           ? "bg-amber-500 w-6"
-                          : "bg-stone-300 hover:bg-stone-400"
+                          : "bg-[var(--color-surface-border)] hover:bg-[var(--color-text-secondary)]"
                       }
                     `}
                   />
@@ -260,7 +260,7 @@ const ReminisceModal = ({ isOpen, onClose, memories = [] }) => {
 
               <button
                 onClick={handleNext}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-stone-600 hover:bg-stone-100 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-[var(--color-text-secondary)] hover:bg-[var(--color-page-bg)] transition-colors"
               >
                 Next
                 <FiChevronRight className="w-5 h-5" />

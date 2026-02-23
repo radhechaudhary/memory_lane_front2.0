@@ -5,6 +5,7 @@ import {
   FiHome,
   FiClock,
   FiImage,
+  FiCamera,
   FiMapPin,
   FiStar,
   FiUsers,
@@ -54,6 +55,7 @@ const UserSidebar = ({
   const mainLinks = [
     { path: "/dashboard", label: "Dashboard", icon: FiHome },
     { path: "/timeline", label: "Timeline", icon: FiClock },
+    { path: "/photos", label: "Photos", icon: FiCamera },
     { path: "/albums", label: "Albums", icon: FiImage },
     { path: "/milestones", label: "Milestones", icon: FiStar },
     { path: "/map", label: "Memory Map", icon: FiMapPin },
@@ -85,10 +87,10 @@ const UserSidebar = ({
               exit={{ opacity: 0, width: 0 }}
               className="overflow-hidden"
             >
-              <span className="text-xl font-bold text-stone-900 whitespace-nowrap">
+              <span className="text-xl font-bold text-[var(--color-text-primary)] whitespace-nowrap">
                 Memona
               </span>
-              <span className="text-xs text-stone-500 block -mt-1">
+              <span className="text-xs text-[var(--color-text-secondary)] block -mt-1">
                 MemoryLane
               </span>
             </motion.div>
@@ -212,12 +214,12 @@ const UserSidebar = ({
       </nav>
 
       {/* Bottom Section */}
-      <div className="p-3 border-t border-stone-200">
+      <div className="p-3 border-t border-[var(--color-surface-border)]">
         {/* User Profile */}
         <div
           className={`
           flex items-center gap-3 p-3 rounded-xl mb-2
-          ${collapsed ? "justify-center" : "bg-stone-50"}
+          ${collapsed ? "justify-center" : "bg-[var(--color-page-bg)]"}
         `}
         >
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center flex-shrink-0">
@@ -241,10 +243,12 @@ const UserSidebar = ({
                 exit={{ opacity: 0, width: 0 }}
                 className="overflow-hidden"
               >
-                <p className="text-sm font-semibold text-stone-900 truncate">
+                <p className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
                   {user?.name || user?.username || "User"}
                 </p>
-                <p className="text-xs text-stone-500 truncate">{user?.email}</p>
+                <p className="text-xs text-[var(--color-text-secondary)] truncate">
+                  {user?.email}
+                </p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -335,7 +339,7 @@ const UserSidebar = ({
       <motion.aside
         initial={false}
         animate={{ width: collapsed ? 80 : 280 }}
-        className="hidden lg:flex fixed left-0 top-0 bottom-0 bg-white border-r border-stone-200 z-40 flex-col"
+        className="hidden lg:flex fixed left-0 top-0 bottom-0 bg-[var(--color-surface-bg)] border-r border-[var(--color-surface-border)] z-40 flex-col"
       >
         {sidebarContent}
       </motion.aside>
@@ -348,7 +352,7 @@ const UserSidebar = ({
             animate={{ x: 0 }}
             exit={{ x: -280 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed left-0 top-0 bottom-0 w-[280px] bg-white border-r border-stone-200 z-50 lg:hidden flex flex-col"
+            className="fixed left-0 top-0 bottom-0 w-[280px] bg-[var(--color-surface-bg)] border-r border-[var(--color-surface-border)] z-50 lg:hidden flex flex-col"
           >
             {sidebarContent}
           </motion.div>

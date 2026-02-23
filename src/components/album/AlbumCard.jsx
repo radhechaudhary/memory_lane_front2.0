@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   FiImage,
   FiMoreVertical,
@@ -8,19 +8,20 @@ import {
   FiShare2,
   FiLock,
   FiGlobe,
-} from 'react-icons/fi';
-import { useState } from 'react';
+} from "react-icons/fi";
+import { useState } from "react";
 
-const AlbumCard = ({ 
-  album, 
-  onEdit, 
-  onDelete, 
+const AlbumCard = ({
+  album,
+  onEdit,
+  onDelete,
   onShare,
-  showActions = true 
+  showActions = true,
 }) => {
   const [showMenu, setShowMenu] = useState(false);
 
-  const coverImage = album.memories?.[0]?.media?.find(m => m.type === 'image')?.url ||
+  const coverImage =
+    album.memories?.[0]?.media?.find((m) => m.type === "image")?.url ||
     album.coverImage ||
     null;
 
@@ -30,16 +31,18 @@ const AlbumCard = ({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4 }}
-      className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-100"
+      className="group bg-white rounded-2xl overflow-hidden border border-stone-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
     >
       {/* Cover Image */}
-      <Link to={`/albums/${album._id}`} className="block relative aspect-[4/3] overflow-hidden album-cover">
+      <Link
+        to={`/albums/${album._id}`}
+        className="block relative aspect-[4/3] overflow-hidden album-cover"
+      >
         {coverImage ? (
-          <img 
-            src={coverImage} 
+          <img
+            src={coverImage}
             alt={album.name}
-            className="w-full h-full object-cover transition-transform duration-500"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-amber-50 to-stone-100 flex items-center justify-center">
@@ -51,7 +54,7 @@ const AlbumCard = ({
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         {/* Privacy Badge */}
-        <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1.5 text-xs font-medium text-stone-700 backdrop-blur-sm">
+        <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1.5 text-xs font-medium text-stone-700 backdrop-blur-sm z-10">
           {album.isPrivate ? (
             <>
               <FiLock className="w-3 h-3" />
@@ -65,9 +68,23 @@ const AlbumCard = ({
           )}
         </div>
 
+        {/* Tag Badges (Overlay on left side as requested) */}
+        <div className="absolute top-12 left-3 flex flex-col gap-1.5 z-10 pointer-events-none">
+          {album.tags
+            ?.filter((tag) => tag.toLowerCase().includes("milestone"))
+            .map((tag, index) => (
+              <div
+                key={index}
+                className="px-2 py-0.5 bg-amber-400/90 text-stone-900 rounded-md text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm border border-amber-500/50 shadow-sm"
+              >
+                #{tag}
+              </div>
+            ))}
+        </div>
+
         {/* Memory Count */}
-        <div className="absolute bottom-3 left-3 px-3 py-1.5 bg-amber-500 rounded-full text-sm font-medium text-white">
-          {memoryCount} {memoryCount === 1 ? 'memory' : 'memories'}
+        <div className="absolute bottom-3 left-3 px-3 py-1.5 bg-amber-500 rounded-full text-sm font-medium text-white z-10">
+          {memoryCount} {memoryCount === 1 ? "memory" : "memories"}
         </div>
 
         {/* Actions Menu */}
@@ -135,7 +152,7 @@ const AlbumCard = ({
         <h3 className="font-semibold text-stone-900 mb-1 group-hover:text-amber-700 transition-colors">
           {album.name}
         </h3>
-        
+
         {album.description && (
           <p className="text-sm text-stone-600 line-clamp-2">
             {album.description}
@@ -145,14 +162,21 @@ const AlbumCard = ({
         {/* Tags */}
         {album.tags?.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-3">
-            {album.tags.slice(0, 3).map((tag, index) => (
-              <span 
-                key={index}
-                className="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full text-xs"
-              >
-                #{tag}
-              </span>
-            ))}
+            {album.tags.map((tag, index) => {
+              const isMilestoneTag = tag.toLowerCase().includes("milestone");
+              return (
+                <span
+                  key={index}
+                  className={`px-2 py-0.5 rounded-full text-xs font-medium transition-colors ${
+                    isMilestoneTag
+                      ? "bg-amber-100 text-amber-700 border border-amber-200"
+                      : "bg-stone-100 text-stone-600"
+                  }`}
+                >
+                  #{tag}
+                </span>
+              );
+            })}
           </div>
         )}
       </Link>
@@ -161,4 +185,3 @@ const AlbumCard = ({
 };
 
 export default AlbumCard;
-

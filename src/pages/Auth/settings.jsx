@@ -23,14 +23,14 @@ import {
   FiLoader,
   FiAlertTriangle,
 } from "react-icons/fi";
-import { useThemeStore } from "../../store/themeStore";
+import { useTheme } from "../../context/ThemeContext";
 import AppShell from "../../components/layout/AppShell";
 import { useAuth } from "../../hooks/useAuth";
 
 const ToggleSwitch = ({ enabled, onChange }) => (
   <button
     onClick={() => onChange(!enabled)}
-    className={`relative h-7 w-12 rounded-full transition-all duration-300 ${enabled ? "bg-amber-400" : "bg-stone-200 dark:bg-gray-600"}`}
+    className={`relative h-7 w-12 rounded-full transition-all duration-300 ${enabled ? "bg-amber-400" : "bg-stone-200"}`}
   >
     <span
       className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-md transition-transform duration-300 ${enabled ? "left-6" : "left-1"}`}
@@ -39,7 +39,7 @@ const ToggleSwitch = ({ enabled, onChange }) => (
 );
 
 export default function SettingsPage() {
-  const { setTheme, toggleTheme } = useThemeStore();
+  const { setTheme } = useTheme();
   const { user, updateProfile, changePassword } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("profile");
@@ -106,7 +106,12 @@ export default function SettingsPage() {
     ],
   });
 
-  const [appearanceData, setAppearanceData] = useState({ theme: "light" });
+  const { theme } = useTheme();
+  const [appearanceData, setAppearanceData] = useState({ theme });
+
+  useEffect(() => {
+    setAppearanceData({ theme });
+  }, [theme]);
 
   const showSuccessMessage = (message) => {
     setShowSuccess(message);
@@ -191,7 +196,6 @@ export default function SettingsPage() {
     { id: "notifications", label: "Notifications", icon: FiBell },
     { id: "storage", label: "Storage", icon: FiHardDrive },
     { id: "subscription", label: "Subscription", icon: FiCreditCard },
-    { id: "appearance", label: "Appearance", icon: FiSun },
     { id: "danger", label: "Danger Zone", icon: FiAlertTriangle },
   ];
 
@@ -685,50 +689,6 @@ export default function SettingsPage() {
                       <FiCheck className="h-4 w-4 text-amber-500" />
                       <span className="text-stone-700">{feature}</span>
                     </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "appearance" && (
-            <div className={panelClassName}>
-              <h2 className="text-xl font-semibold text-stone-800">
-                Appearance
-              </h2>
-              <p className="mt-1 text-sm text-stone-600">
-                Customize how Memona looks
-              </p>
-              <div className="mt-8">
-                <label className="mb-4 block text-sm font-medium text-stone-700">
-                  Theme
-                </label>
-                <div className="grid gap-4 sm:grid-cols-3">
-                  {themeOptions.map((option) => (
-                    <button
-                      key={option.id}
-                      onClick={() => {
-                        setAppearanceData({
-                          ...appearanceData,
-                          theme: option.id,
-                        });
-                        option.id === "system"
-                          ? toggleTheme()
-                          : setTheme(option.id);
-                      }}
-                      className={`rounded-xl border-2 p-4 transition-all ${appearanceData.theme === option.id ? "border-amber-400 bg-amber-50" : "border-stone-200 hover:border-stone-300"}`}
-                    >
-                      <div
-                        className={`flex h-12 w-12 items-center justify-center rounded-lg mx-auto mb-3 ${appearanceData.theme === option.id ? "bg-amber-100 text-amber-600" : "bg-stone-100 text-stone-500"}`}
-                      >
-                        <option.icon className="h-5 w-5" />
-                      </div>
-                      <p
-                        className={`text-sm font-medium ${appearanceData.theme === option.id ? "text-amber-700" : "text-stone-700"}`}
-                      >
-                        {option.label}
-                      </p>
-                    </button>
                   ))}
                 </div>
               </div>

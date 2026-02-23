@@ -1,12 +1,12 @@
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { FiStar, FiCalendar, FiChevronRight } from 'react-icons/fi';
-import { formatDate } from '../../utils/formatDate';
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { FiStar, FiCalendar, FiChevronRight } from "react-icons/fi";
+import { formatDate } from "../../utils/formatDate";
 
-const MemoryMilestone = ({ 
-  milestone, 
+const MemoryMilestone = ({
+  milestone,
   onClick,
-  variant = 'default' // 'default', 'compact', 'featured'
+  variant = "default", // 'default', 'compact', 'featured'
 }) => {
   const memoriesCount = milestone.memories?.length || 0;
 
@@ -14,15 +14,14 @@ const MemoryMilestone = ({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4 }}
       className={`
         group bg-white dark:bg-gray-800 rounded-2xl overflow-hidden 
-        shadow-sm hover:shadow-lg transition-all duration-300
+        shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1
         border border-gray-100 dark:border-gray-700
-        ${variant === 'featured' ? 'col-span-2' : ''}
+        ${variant === "featured" ? "col-span-2" : ""}
       `}
     >
-      <Link 
+      <Link
         to={`/milestones/${milestone._id}`}
         onClick={onClick}
         className="block"
@@ -30,8 +29,8 @@ const MemoryMilestone = ({
         {/* Banner Image */}
         {milestone.coverImage && (
           <div className="relative aspect-[3/1] overflow-hidden">
-            <img 
-              src={milestone.coverImage} 
+            <img
+              src={milestone.coverImage}
               alt={milestone.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
@@ -42,17 +41,22 @@ const MemoryMilestone = ({
         <div className="p-4">
           {/* Header */}
           <div className="flex items-start gap-3 mb-3">
-            <div className={`
+            <div
+              className={`
               w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0
-              ${variant === 'featured' ? 'w-16 h-16' : ''}
-              ${milestone.isCompleted 
-                ? 'bg-gradient-to-br from-amber-400 to-orange-500' 
-                : 'bg-gradient-to-br from-indigo-500 to-purple-600'
+              ${variant === "featured" ? "w-16 h-16" : ""}
+              ${
+                milestone.isCompleted
+                  ? "bg-gradient-to-br from-amber-400 to-orange-500"
+                  : "bg-gradient-to-br from-indigo-500 to-purple-600"
               }
-            `}>
-              <FiStar className={`text-white ${variant === 'featured' ? 'w-8 h-8' : 'w-6 h-6'}`} />
+            `}
+            >
+              <FiStar
+                className={`text-white ${variant === "featured" ? "w-8 h-8" : "w-6 h-6"}`}
+              />
             </div>
-            
+
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                 {milestone.title}
@@ -69,7 +73,7 @@ const MemoryMilestone = ({
               <FiCalendar className="w-4 h-4" />
               {formatDate(milestone.date)}
             </div>
-            
+
             {milestone.targetDate && (
               <div className="flex items-center gap-1">
                 <span className="text-xs">Target:</span>
@@ -92,7 +96,9 @@ const MemoryMilestone = ({
               <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
-                  animate={{ width: `${Math.min(100, (memoriesCount / milestone.targetCount) * 100)}%` }}
+                  animate={{
+                    width: `${Math.min(100, (memoriesCount / milestone.targetCount) * 100)}%`,
+                  }}
                   className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full"
                 />
               </div>
@@ -103,7 +109,7 @@ const MemoryMilestone = ({
           <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
             <div className="flex -space-x-2">
               {milestone.memories?.slice(0, 3).map((memory, index) => {
-                const image = memory.media?.find(m => m.type === 'image');
+                const image = memory.media?.find((m) => m.type === "image");
                 return image ? (
                   <img
                     key={index}
@@ -119,7 +125,7 @@ const MemoryMilestone = ({
                 </div>
               )}
             </div>
-            
+
             <FiChevronRight className="w-5 h-5 text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
           </div>
         </div>
@@ -129,4 +135,3 @@ const MemoryMilestone = ({
 };
 
 export default MemoryMilestone;
-

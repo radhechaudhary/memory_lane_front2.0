@@ -33,6 +33,7 @@ import AlbumDetail from "./pages/AlbumDetail";
 import Milestones from "./pages/Milestones";
 import MapView from "./pages/MapView";
 import SharedMemories from "./pages/SharedMemories";
+import Photos from "./pages/Photos";
 import NotFound from "./pages/NotFound";
 
 const PublicRoute = ({ children }) => {
@@ -40,7 +41,7 @@ const PublicRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F8F6F2]">
+      <div className="flex min-h-screen items-center justify-center bg-[var(--color-page-bg)]">
         <div className="h-10 w-10 animate-spin rounded-full border-2 border-amber-400 border-t-transparent" />
       </div>
     );
@@ -165,6 +166,16 @@ const AppRoutes = () => (
           <UserRoute>
             <UserLayout>
               <MapView />
+            </UserLayout>
+          </UserRoute>
+        }
+      />
+      <Route
+        path="/photos"
+        element={
+          <UserRoute>
+            <UserLayout>
+              <Photos />
             </UserLayout>
           </UserRoute>
         }
